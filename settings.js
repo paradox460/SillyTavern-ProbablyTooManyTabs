@@ -104,7 +104,7 @@ export class SettingsManager {
             { id: 'notebookPanel', title: 'Notebook', icon: 'fa-book' },
             { id: 'gallery', title: 'Gallery', icon: 'fa-images' },
             { id: 'zoomed_avatar', title: 'Avatar', icon: 'fa-user' },
-            { id: 'galleryImageDraggable', title: 'Avatar', icon: 'fa-folder' },
+            { id: 'galleryImageDraggable', title: 'Gallery Img', icon: 'fa-folder' },
             { id: 'character_popup', title: 'Adv. Definitions', icon: 'fa-user-gear' },
             { id: 'user-settings-block', title: 'User Settings', icon: 'fa-gear' },
             { id: 'floatingPrompt', title: 'Author\'s Note', icon: 'fa-note-sticky' },
@@ -136,7 +136,7 @@ export class SettingsManager {
         savedLayoutMobile: null,
 
         defaultLayout: {
-            version: 22,
+            version: 27,
             showIconsOnly: false,
             showLeft: true,
             showRight: true,
@@ -163,6 +163,7 @@ export class SettingsManager {
                             { sourceId: "logprobsViewer" },
                             { sourceId: "extensionSideBar" },
                             { sourceId: "injectManagerSideBar" },
+                            { sourceId: "etle--panel" },
                             { sourceId: "cardGalleryViewer" }
                         ]
                     },
@@ -172,8 +173,7 @@ export class SettingsManager {
                         { searchId: "qr--popout", searchClass: "", paneId: "ptmt-default-left-pane" },
                         { searchId: "ctsi-drawerPopout", searchClass: "", paneId: "ptmt-default-left-pane" },
                         { searchId: "trackerInterface", searchClass: "", paneId: "ptmt-default-left-pane" },
-                        { searchId: "vv--root", searchClass: "", paneId: "ptmt-default-left-pane" },
-                        { searchId: "etle--panel", searchClass: "", paneId: "ptmt-default-left-pane" }
+                        { searchId: "vv--root", searchClass: "", paneId: "ptmt-default-left-pane" }
                     ]
                 },
                 center: {
@@ -257,7 +257,7 @@ export class SettingsManager {
         uiTheme: 'sharp',
 
         mobileLayout: {
-            version: 22,
+            version: 27,
             showIconsOnly: true,
             showLeft: false,
             showRight: false,
@@ -302,6 +302,7 @@ export class SettingsManager {
                             { sourceId: "dupeFinderPanel" },
                             { sourceId: "injectManagerSideBar" },
                             { sourceId: "charlib-embedded-container" },
+                            { sourceId: "etle--panel" },
                             { sourceId: "cardGalleryViewer" }
                         ]
                     },
@@ -314,10 +315,9 @@ export class SettingsManager {
                         { searchId: "", searchClass: "galleryImageDraggable", paneId: "ptmt-default-center-pane" },
                         { searchId: "objectiveExtensionPopout", searchClass: "", paneId: "ptmt-default-center-pane" },
                         { searchId: "moonlit_echoes_popout", searchClass: "", paneId: "ptmt-default-center-pane" },
-                        { searchId: "zoomed_avatar", searchClass: "", paneId: "ptmt-default-center-pane" },
+                        { searchId: "", searchClass: "zoomed_avatar", paneId: "ptmt-default-center-pane" },
                         { searchId: "trackerInterface", searchClass: "", paneId: "ptmt-default-center-pane" },
-                        { searchId: "vv--root", searchClass: "", paneId: "ptmt-default-center-pane" },
-                        { searchId: "etle--panel", searchClass: "", paneId: "ptmt-default-center-pane" }
+                        { searchId: "vv--root", searchClass: "", paneId: "ptmt-default-center-pane" }
                     ]
                 }
             }
@@ -575,6 +575,9 @@ export class SettingsManager {
                 if (!mapping.icon || mapping.icon === 'fa-search') {
                     mapping.icon = 'fa-magnifying-glass';
                 }
+            }
+            if (mapping.id === 'galleryImageDraggable' && mapping.title === 'Avatar') {
+                mapping.title = 'Gallery Img';
             }
         });
 

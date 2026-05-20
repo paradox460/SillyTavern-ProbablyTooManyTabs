@@ -190,7 +190,17 @@ When a column has a split (two panes stacked or side-by-side), you'll see a **Sp
 
 ### Pending Tabs
 
-Below each active column, a **Pending Tabs** section lists any panels that exist in the DOM but couldn't be placed (e.g. an extension that loaded after the layout was restored).
+**Pending Tabs** are placeholders for panels that PTMT expects to appear later.
+
+Some SillyTavern panels do not exist when PTMT first restores your layout. For example, an avatar zoom window or gallery image popout is only created after you click an avatar or open an image. PTMT cannot put that panel into a normal tab until the panel actually exists, so it keeps a **Pending Tab** as a reminder: "when this panel appears, put it here."
+
+In simple terms:
+- **Normal tabs** are real tabs for panels that can be placed now.
+- **Pending tabs** are waiting spots for temporary or late-created panels.
+- When the matching panel appears, PTMT automatically turns the pending entry into a real tab.
+- Pending tabs are not broken tabs. They are watchers/listeners for panels that have not appeared yet.
+
+You can drag pending tabs between **Pending Tabs** sections to choose where those future panels should open. Pending tabs do not mix with normal tabs in the editor.
 
 ### Hidden Tabs
 
@@ -230,7 +240,7 @@ Click **Switch to Mobile Layout** in Layout Settings. PTMT collapses everything 
 
 - After major PTMT updates the layout may reset automatically if the internal snapshot format changed.
 - If a new extension's tab doesn't appear after installing it, try **Reset Layout to Default**.
-- **Pending Tabs** lists panels that were injected dynamically by JavaScript at runtime (by other extensions or ST itself) and not yet assigned to a column.
+- **Pending Tabs** are waiting spots for panels that only appear after an action, such as clicking an avatar or opening a temporary extension panel. They become real tabs when the matching panel appears.
 ---
 
 ## Help & Support

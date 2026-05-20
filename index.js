@@ -10,7 +10,7 @@ import { getUserAvatar } from '../../../personas.js';
 import { settings, SettingsManager } from './settings.js';
 
 import { debounce, getPanelById, getTabById, getRefs, readPaneViewSettings, writePaneViewSettings, cleanupAllObservers, trackListener, registerBodyObserver } from './utils.js';
-import { generateLayoutSnapshot, applyLayoutSnapshot } from './snapshot.js';
+import { generateLayoutSnapshot, applyLayoutSnapshot, migrateSavedLayouts } from './snapshot.js';
 import { createLayoutIfMissing, applyColumnVisibility, recalculateColumnSizes } from './layout.js';
 import { applyPaneOrientation, applySplitOrientation, openViewSettingsDialog, updateSplitCollapsedState } from './pane.js';
 import {
@@ -514,6 +514,7 @@ function bindAvatarClickOverride() {
 // ─── Layout Loading ──────────────────────────────────────────────────────────
 
 function loadInitialLayout(api) {
+    migrateSavedLayouts(settings);
     const isMobile = settings.get('isMobile');
     const savedLayout = isMobile ? settings.get('savedLayoutMobile') : settings.get('savedLayoutDesktop');
     const defaultLayout = settings.get('defaultLayout');

@@ -1800,6 +1800,26 @@ body.ptmt-Theme-Sharp .ptmt-pane-grid.grid-vertical.flow-reversed .ptmt-tabStrip
   align-self: center;
 }
 
+.ptmt-dragging-normal-tab .ptmt-editor-tabs-container:not([data-is-pending-list="true"]) {
+  outline: 2px solid color-mix(in srgb, var(--ptmt-adaptive-quote), transparent 20%);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--ptmt-adaptive-quote), transparent 88%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ptmt-adaptive-quote), transparent 50%);
+}
+
+.ptmt-dragging-pending-tab .ptmt-editor-pending {
+  outline: 2px solid color-mix(in srgb, var(--ptmt-adaptive-quote), transparent 20%);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--ptmt-adaptive-quote), transparent 88%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ptmt-adaptive-quote), transparent 50%);
+}
+
+.ptmt-dragging-pending-tab .ptmt-editor-tabs-container:not([data-is-pending-list="true"]),
+.ptmt-dragging-normal-tab .ptmt-editor-tabs-container[data-is-pending-list="true"] {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
 .ptmt-editor-tab {
   display: inline-flex;
   align-items: center;

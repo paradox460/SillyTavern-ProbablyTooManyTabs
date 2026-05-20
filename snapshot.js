@@ -1,4 +1,4 @@
-// snapshot.js 
+// snapshot.js
 
 import { getRefs, writePaneViewSettings, readPaneViewSettings } from './utils.js';
 import { getPanelById, getSplitOrientation, el, getPanelBySourceId } from './utils.js';
@@ -25,12 +25,155 @@ import { createInfoPanel, PTMT_INFO_PANEL_ID, getPTMTInfoCurrentVersion } from '
 /** @typedef {import('./types.js').HiddenTab} HiddenTab */
 
 const SNAPSHOT_VERSION = 15;      // Minimum supported version
-const SNAPSHOT_CURRENT_VERSION = 22; // Version written by generateLayoutSnapshot
+const SNAPSHOT_CURRENT_VERSION = 27; // Version written by generateLayoutSnapshot
 
 // ─── Snapshot Migration Registry ─────────────────────────────────────────────
 // Each key is a source version; the value migrates that version to (key + 1).
 // To add a future v17→v18 migration, just add `17: (snap) => { ... snap.version = 18; return snap; }`.
 // Migrations run in sequence: 15→16→17→...
+
+function getDefaultLayoutForSnapshotMode(mode) {
+    return mode === 'mobile'
+        ? SettingsManager.defaultSettings.mobileLayout
+        : SettingsManager.defaultSettings.defaultLayout;
+}
+
+function walkPaneTabs(node, callback) {
+    if (!node) return;
+    if (node.type === 'pane') {
+        (node.tabs || []).forEach(callback);
+        return;
+    }
+    if (node.type === 'split') {
+        (node.children || []).forEach(child => walkPaneTabs(child, callback));
+    }
+}
+
+function hasNormalTab(snap, sourceId) {
+    return ['left', 'center', 'right'].some(col => {
+        let found = false;
+        walkPaneTabs(snap.columns?.[col]?.content, tab => {
+            if (tab.sourceId === sourceId) found = true;
+        });
+        return found;
+    });
+}
+
+function hasGhostTab(snap, ghostTab) {
+    return ['left', 'center', 'right'].some(col => (snap.columns?.[col]?.ghostTabs || []).some(t =>
+        (t.searchId || '') === (ghostTab.searchId || '') && (t.searchClass || '') === (ghostTab.searchClass || '')
+    ));
+}
+
+function hasHiddenTab(snap, sourceId) {
+    return (snap.hiddenTabs || []).some(t => (typeof t === 'string' ? t : t.sourceId) === sourceId);
+}
+
+function findDefaultNormalTabPlacement(defaultLayout, sourceId) {
+    for (const col of ['left', 'center', 'right']) {
+        const findInNode = (node) => {
+            if (!node) return null;
+            if (node.type === 'pane') {
+                if ((node.tabs || []).some(t => t.sourceId === sourceId)) {
+                    return { column: col, paneId: node.paneId };
+                }
+                return null;
+            }
+            if (node.type === 'split') {
+                for (const child of node.children || []) {
+                    const found = findInNode(child);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+        const found = findInNode(defaultLayout.columns?.[col]?.content);
+        if (found) return found;
+    }
+    return null;
+}
+
+function findDefaultGhostTabPlacement(defaultLayout, ghostTab) {
+    for (const col of ['left', 'center', 'right']) {
+        const found = (defaultLayout.columns?.[col]?.ghostTabs || []).find(t =>
+            (t.searchId || '') === (ghostTab.searchId || '') && (t.searchClass || '') === (ghostTab.searchClass || '')
+        );
+        if (found) return { column: col, ghostTab: found };
+    }
+    return null;
+}
+
+function addTabToFirstPaneInColumn(snap, column, sourceId) {
+    const addToNode = (node) => {
+        if (!node) return false;
+        if (node.type === 'pane') {
+            node.tabs = [...(node.tabs || []), { sourceId }];
+            return true;
+        }
+        if (node.type === 'split') {
+            for (const child of node.children || []) {
+                if (addToNode(child)) return true;
+            }
+        }
+        return false;
+    };
+
+    if (!snap.columns) snap.columns = {};
+    if (!snap.columns[column]) snap.columns[column] = { content: null, ghostTabs: [] };
+    return addToNode(snap.columns[column].content);
+}
+
+function removeGhostBySourceId(snap, sourceId) {
+    for (const col of ['left', 'center', 'right']) {
+        const ghostTabs = snap.columns?.[col]?.ghostTabs;
+        if (!ghostTabs) continue;
+        snap.columns[col].ghostTabs = ghostTabs.filter(t =>
+            (t.searchId || '') !== sourceId && (t.searchClass || '') !== sourceId && (t.sourceId || '') !== sourceId
+        );
+    }
+}
+
+function ensureAllDefaultTabsPresent(snap) {
+    const defaultLayout = getDefaultLayoutForSnapshotMode(snap.mode);
+    if (!defaultLayout?.columns) return snap;
+
+    for (const mapping of SettingsManager.defaultSettings.panelMappings || []) {
+        const sourceId = mapping.id;
+        if (!sourceId) continue;
+
+        const normalPlacement = findDefaultNormalTabPlacement(defaultLayout, sourceId);
+        if (normalPlacement) {
+            // If the default now says this is a normal tab, remove stale pending entries for it.
+            removeGhostBySourceId(snap, sourceId);
+
+            if (hasNormalTab(snap, sourceId) || hasHiddenTab(snap, sourceId)) continue;
+
+            if (!addTabToFirstPaneInColumn(snap, normalPlacement.column, sourceId)) {
+                for (const fallbackColumn of ['center', 'left', 'right']) {
+                    if (addTabToFirstPaneInColumn(snap, fallbackColumn, sourceId)) break;
+                }
+            }
+            continue;
+        }
+
+        if (hasNormalTab(snap, sourceId) || hasHiddenTab(snap, sourceId)) continue;
+
+        for (const col of ['left', 'center', 'right']) {
+            const defaultGhost = (defaultLayout.columns?.[col]?.ghostTabs || []).find(t =>
+                t.searchId === sourceId || t.searchClass === sourceId
+            );
+            if (!defaultGhost) continue;
+            if (hasGhostTab(snap, defaultGhost)) break;
+            if (!snap.columns) snap.columns = {};
+            if (!snap.columns[col]) snap.columns[col] = { ghostTabs: [] };
+            if (!snap.columns[col].ghostTabs) snap.columns[col].ghostTabs = [];
+            snap.columns[col].ghostTabs.push({ ...defaultGhost });
+            break;
+        }
+    }
+
+    return snap;
+}
 
 const SNAPSHOT_MIGRATIONS = {
     15: (snap) => {
@@ -131,7 +274,7 @@ const SNAPSHOT_MIGRATIONS = {
                 updateTabs(snap.columns[col].content);
             }
         }
-        
+
         snap.version = 19;
         return snap;
     },
@@ -232,6 +375,172 @@ const SNAPSHOT_MIGRATIONS = {
         snap.version = 22;
         return snap;
     },
+    22: (snap) => {
+        // v22→v23: Convert ETLE to a normal tab and heal zoomed_avatar pending-tab selector.
+        const addTabToFirstPane = (node, sourceId) => {
+            if (!node) return;
+            if (node.type === 'pane') {
+                if (!(node.tabs || []).some(t => t.sourceId === sourceId)) {
+                    node.tabs = [...(node.tabs || []), { sourceId }];
+                }
+                return;
+            }
+            if (node.type === 'split' && node.children?.length) {
+                addTabToFirstPane(node.children[0], sourceId);
+            }
+        };
+
+        const hasTab = (node, sourceId) => {
+            if (!node) return false;
+            if (node.type === 'pane') return (node.tabs || []).some(t => t.sourceId === sourceId);
+            if (node.type === 'split') return (node.children || []).some(child => hasTab(child, sourceId));
+            return false;
+        };
+
+        const removeGhost = (searchId, searchClass = '') => {
+            for (const col of ['left', 'center', 'right']) {
+                const ghostTabs = snap.columns?.[col]?.ghostTabs;
+                if (ghostTabs) {
+                    snap.columns[col].ghostTabs = ghostTabs.filter(t => t.searchId !== searchId || t.searchClass !== searchClass);
+                }
+            }
+        };
+
+        removeGhost('etle--panel', '');
+        if (!['left', 'center', 'right'].some(col => hasTab(snap.columns?.[col]?.content, 'etle--panel'))) {
+            const targetColumn = snap.mode === 'mobile' ? 'center' : 'left';
+            addTabToFirstPane(snap.columns?.[targetColumn]?.content, 'etle--panel');
+        }
+
+        for (const col of ['left', 'center', 'right']) {
+            const ghostTabs = snap.columns?.[col]?.ghostTabs || [];
+            ghostTabs.forEach(t => {
+                if (t.searchId === 'zoomed_avatar' && !t.searchClass) {
+                    t.searchId = '';
+                    t.searchClass = 'zoomed_avatar';
+                }
+            });
+        }
+
+        snap.version = 23;
+        return snap;
+    },
+    23: (snap) => {
+        // v23→v24: Refresh built-in tab labels/icons from panelMappings unless a tab has a custom title/icon.
+        const defaultMappings = SettingsManager.defaultSettings.panelMappings || [];
+        const currentMappings = settings.get('panelMappings') || defaultMappings;
+        const legacyTitles = new Map([
+            ['left-nav-panel', ['Navigation']],
+            ['right-nav-panel', ['Inspector']],
+            ['galleryImageDraggable', ['Avatar']],
+        ]);
+        const legacyIcons = new Map([
+            ['left-nav-panel', ['fa-sliders']],
+            ['right-nav-panel', ['fa-search']],
+        ]);
+
+        const refreshTab = (tab) => {
+            if (!tab?.sourceId) return;
+            const sourceId = tab.sourceId.startsWith('id:') || tab.sourceId.startsWith('class:')
+                ? tab.sourceId.split(':')[1]
+                : tab.sourceId;
+            const defaultMapping = defaultMappings.find(m => m.id === sourceId);
+            const currentMapping = currentMappings.find(m => m.id === sourceId) || defaultMapping;
+            if (!currentMapping) return;
+
+            const defaultTitles = new Set([sourceId, defaultMapping?.title, ...(legacyTitles.get(sourceId) || [])].filter(Boolean));
+            if (!tab.title || defaultTitles.has(tab.title)) {
+                tab.title = currentMapping.title || defaultMapping?.title || sourceId;
+            }
+
+            const defaultIcons = new Set([defaultMapping?.icon, ...(legacyIcons.get(sourceId) || [])].filter(Boolean));
+            if (!tab.icon || defaultIcons.has(tab.icon)) {
+                tab.icon = currentMapping.icon || defaultMapping?.icon || tab.icon;
+            }
+        };
+
+        const walkTabs = (node) => {
+            if (!node) return;
+            if (node.type === 'pane') {
+                (node.tabs || []).forEach(refreshTab);
+                return;
+            }
+            if (node.type === 'split') {
+                (node.children || []).forEach(walkTabs);
+            }
+        };
+
+        for (const col of ['left', 'center', 'right']) {
+            walkTabs(snap.columns?.[col]?.content);
+        }
+
+        snap.version = 24;
+        return snap;
+    },
+    24: (snap) => {
+        // v24→v25: Re-run tab metadata healing so both desktop and mobile saved layouts are checked on update.
+        const defaultMappings = SettingsManager.defaultSettings.panelMappings || [];
+        const currentMappings = settings.get('panelMappings') || defaultMappings;
+        const legacyTitles = new Map([
+            ['left-nav-panel', ['Navigation']],
+            ['right-nav-panel', ['Inspector']],
+            ['galleryImageDraggable', ['Avatar']],
+        ]);
+        const legacyIcons = new Map([
+            ['left-nav-panel', ['fa-sliders']],
+            ['right-nav-panel', ['fa-search']],
+        ]);
+
+        const refreshTab = (tab) => {
+            if (!tab?.sourceId) return;
+            const sourceId = tab.sourceId.startsWith('id:') || tab.sourceId.startsWith('class:')
+                ? tab.sourceId.split(':')[1]
+                : tab.sourceId;
+            const defaultMapping = defaultMappings.find(m => m.id === sourceId);
+            const currentMapping = currentMappings.find(m => m.id === sourceId) || defaultMapping;
+            if (!currentMapping) return;
+
+            const defaultTitles = new Set([sourceId, defaultMapping?.title, ...(legacyTitles.get(sourceId) || [])].filter(Boolean));
+            if (!tab.title || defaultTitles.has(tab.title)) {
+                tab.title = currentMapping.title || defaultMapping?.title || sourceId;
+            }
+
+            const defaultIcons = new Set([defaultMapping?.icon, ...(legacyIcons.get(sourceId) || [])].filter(Boolean));
+            if (!tab.icon || defaultIcons.has(tab.icon)) {
+                tab.icon = currentMapping.icon || defaultMapping?.icon || tab.icon;
+            }
+        };
+
+        const walkTabs = (node) => {
+            if (!node) return;
+            if (node.type === 'pane') {
+                (node.tabs || []).forEach(refreshTab);
+                return;
+            }
+            if (node.type === 'split') {
+                (node.children || []).forEach(walkTabs);
+            }
+        };
+
+        for (const col of ['left', 'center', 'right']) {
+            walkTabs(snap.columns?.[col]?.content);
+        }
+
+        snap.version = 25;
+        return snap;
+    },
+    25: (snap) => {
+        // v25→v26: Ensure every default tab is present somewhere: visible, hidden, or pending.
+        ensureAllDefaultTabsPresent(snap);
+        snap.version = 26;
+        return snap;
+    },
+    26: (snap) => {
+        // v26→v27: Remove stale pending entries for tabs that are now normal default tabs.
+        ensureAllDefaultTabsPresent(snap);
+        snap.version = 27;
+        return snap;
+    },
 };
 
 /**
@@ -243,7 +552,7 @@ function migrateSnapshot(snapshot) {
 
     let current = JSON.parse(JSON.stringify(snapshot));
     let steps = 0;
-    const MAX_STEPS = 10; // safety limit
+    const MAX_STEPS = 25; // safety limit
 
     while (current.version < SNAPSHOT_CURRENT_VERSION && steps < MAX_STEPS) {
         const migrate = SNAPSHOT_MIGRATIONS[current.version];
@@ -267,6 +576,26 @@ function migrateSnapshot(snapshot) {
     }
 
     return current;
+}
+
+export function migrateSavedLayouts(settingsManager) {
+    const updates = {};
+
+    for (const key of ['savedLayoutDesktop', 'savedLayoutMobile']) {
+        const snapshot = settingsManager.get(key);
+        if (!snapshot || typeof snapshot !== 'object') continue;
+        if (!snapshot.version || snapshot.version < SNAPSHOT_VERSION || snapshot.version >= SNAPSHOT_CURRENT_VERSION) continue;
+
+        const migrated = migrateSnapshot(snapshot);
+        if (migrated) {
+            updates[key] = migrated;
+        }
+    }
+
+    if (Object.keys(updates).length > 0) {
+        console.log('[PTMT] Migrated saved layouts:', Object.keys(updates));
+        settingsManager.update(updates, true);
+    }
 }
 
 const DEFAULT_MIN_SIZES = {
@@ -717,7 +1046,7 @@ export function applyLayoutSnapshot(snapshot, api, settings) {
                     const tabEl = pane._tabStrip.querySelector(`${SELECTORS.TAB}[data-for="${CSS.escape(pid)}"]`);
 
                     if (tabEl) {
-                        // Ensure all tabs are collapsed if the pane is collapsed, 
+                        // Ensure all tabs are collapsed if the pane is collapsed,
                         // or if the tab specifically was saved as collapsed.
                         if (t.collapsed || isPaneCollapsed) tabEl.classList.add('collapsed');
                         if (t.active) activePid = pid;
@@ -765,7 +1094,10 @@ export function applyLayoutSnapshot(snapshot, api, settings) {
     });
 
     const mappings = settings.get('panelMappings') || [];
-    const allGhostSourceIds = new Set(allGhostTabs.map(t => t.sourceId));
+    const allGhostSourceIds = new Set(allGhostTabs.map(t => {
+        const rawId = t.searchId || t.searchClass || t.sourceId || '';
+        return rawId.startsWith('id:') || rawId.startsWith('class:') ? rawId.split(':')[1] : rawId;
+    }).filter(Boolean));
     const hiddenTabsList = new Set((snapshot.hiddenTabs || []).map(h => typeof h === 'string' ? h : h.sourceId));
 
     // Internal PTMT panels are initialised explicitly later in the RAF callback — skip orphan recovery for them.
@@ -871,9 +1203,10 @@ export function applyLayoutSnapshot(snapshot, api, settings) {
         const settingsTab = getPanelBySourceId(settingsWrapperId);
 
         if (!settingsTab && centerPane) {
+            const settingsMapping = settings.getMapping(settingsWrapperId);
             const settingsPanel = createTabFromContent(settingsWrapperId, {
-                title: 'Layout Settings',
-                icon: 'fa-screwdriver-wrench',
+                title: settingsMapping.title || 'Layout Settings',
+                icon: settingsMapping.icon || 'fa-screwdriver-wrench',
                 makeActive: false
             }, centerPane);
 
@@ -913,9 +1246,10 @@ export function applyLayoutSnapshot(snapshot, api, settings) {
         let infoTabPanel = null;
 
         if (!existingInfoTab && centerPane) {
+            const infoMapping = settings.getMapping(infoWrapperId);
             infoTabPanel = createTabFromContent(infoWrapperId, {
-                title: 'Info & Guide',
-                icon: 'fa-circle-info',
+                title: infoMapping.title || 'Info & Guide',
+                icon: infoMapping.icon || 'fa-circle-info',
                 makeActive: false,
             }, centerPane);
         } else if (existingInfoTab) {
@@ -1031,6 +1365,8 @@ function validateSnapshot(snapshot) {
     if (snapshot.version > SNAPSHOT_CURRENT_VERSION) {
         console.warn(`[PTMT] Snapshot version ${snapshot.version} is newer than supported (${SNAPSHOT_CURRENT_VERSION}). Using as-is.`);
     }
+
+    ensureAllDefaultTabsPresent(snapshot);
 
     const hasContent = ['left', 'center', 'right'].some(col =>
         nodeHasMeaningfulContent(snapshot.columns[col]?.content) || snapshot.columns[col]?.ghostTabs?.length > 0

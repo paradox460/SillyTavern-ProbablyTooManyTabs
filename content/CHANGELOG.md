@@ -2,6 +2,17 @@
 
 ---
 
+## v0.12.5 — 2026-05-20
+
+*Layout Migration & Editor UX*
+
+- ✔ Fix · **Saved Layout Migration** — desktop and mobile saved layouts now both migrate on extension start, ensuring new/default tabs are present somewhere in the UI without duplicating hidden tabs.
+- ✔ Fix · **Pending Tab Cleanup** — tabs that changed from pending to normal, including Every Text Line Editor, are removed from stale Pending Tabs entries and restored as normal tabs.
+- ✦ Polish · **Layout Editor Drag Targets** — pending-tab drags now visually highlight pending panes and no longer interact with normal tab containers.
+- ✦ New · **More Extensions** — added Custom Parameters, Every Text Line Editor, and Card Gallery Viewer to the More tab.
+
+---
+
 ## v0.12.4 — 2026-05-20
 
 *Extension Tabs*

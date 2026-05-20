@@ -14,6 +14,36 @@ Advanced reasoning controls for AI models that support extended thinking. Config
 
 ---
 
+## SillyTavern-CustomParameters
+
+Adds a dedicated interface for managing custom generation parameters in SillyTavern.
+
+**Tags:** Generation · Parameters · QoL
+
+[→ View on GitHub](https://github.com/IceFog72/SillyTavern-CustomParameters)
+
+---
+
+## SillyTavern-EveryTextLineEditor
+
+Edit text line-by-line in a focused panel for faster cleanup and targeted revisions.
+
+**Tags:** Editing · Text · QoL
+
+[→ View on GitHub](https://github.com/IceFog72/SillyTavern-EveryTextLineEditor)
+
+---
+
+## SillyTavern-CardGalleryViewer
+
+Persistent card-aware gallery viewer for character and group media, with upload, delete, sorting, and folder override controls.
+
+**Tags:** Gallery · Images · Video · Media
+
+[→ View on GitHub](https://github.com/IceFog72/SillyTavern-CardGalleryViewer)
+
+---
+
 ## SillyTavern-PocketTTS-WebSocket
 
 SillyTavern extension for [pocket-tts-openapi](https://github.com/IceFog72/pocket-tts-openapi). Streams TTS audio sentence-by-sentence so playback starts during generation. Features a full player bar with seek, volume, speed, highlight, and playlist controls. Supports voice cloning via `.wav` files served from the backend. Requires pocket-tts-openapi

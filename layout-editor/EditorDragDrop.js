@@ -35,6 +35,21 @@ export function handleDragStart(manager, e, pid) {
     }
     // Add dragging class synchronously for immediate visual feedback
     draggedElement.classList.add('dragging');
+    updateDragTargetHighlights(manager);
+}
+
+function updateDragTargetHighlights(manager) {
+    if (!manager.rootElement || !manager.draggedTabInfo) return;
+    const isPendingDrag = manager.draggedTabInfo.isPending;
+    manager.rootElement.classList.toggle('ptmt-dragging-pending-tab', isPendingDrag);
+    manager.rootElement.classList.toggle('ptmt-dragging-normal-tab', !isPendingDrag);
+}
+
+function clearDragState(manager) {
+    manager.rootElement?.classList.remove('ptmt-dragging-pending-tab', 'ptmt-dragging-normal-tab');
+    manager.rootElement?.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+    clearDropIndicators(manager.rootElement);
+    manager.draggedTabInfo = null;
 }
 
 export function handleDragOver(manager, e) {
@@ -58,6 +73,12 @@ export function handleDragOver(manager, e) {
             return;
         }
         if (isPtmtInternal && isTargetPendingList) {
+            e.dataTransfer.dropEffect = 'none';
+            clearDropIndicators(manager.rootElement);
+            return;
+        }
+        const isPendingDrag = manager.draggedTabInfo.isPending;
+        if ((isPendingDrag && !isTargetPendingList) || (!isPendingDrag && isTargetPendingList)) {
             e.dataTransfer.dropEffect = 'none';
             clearDropIndicators(manager.rootElement);
             return;
@@ -107,9 +128,11 @@ export function handleDrop(manager, e) {
     e.preventDefault();
     e.stopPropagation();
     manager.rootElement.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+    manager.rootElement.classList.remove('ptmt-dragging-pending-tab', 'ptmt-dragging-normal-tab');
     const targetContainer = manager.indicator.parentElement;
     if (!targetContainer) {
         manager.indicator.remove();
+        clearDragState(manager);
         return;
     }
 
@@ -122,6 +145,15 @@ export function handleDrop(manager, e) {
     manager.indicator.remove();
     const info = manager.draggedTabInfo;
 
+    if (info.isPending && !isTargetPending) {
+        clearDragState(manager);
+        return;
+    }
+    if (!info.isPending && isTargetPending) {
+        clearDragState(manager);
+        return;
+    }
+
     if (isTargetHidden) {
         handleHiddenTabDrop(manager, targetContainer, newIndex);
     } else if (isTargetPending) {
@@ -131,11 +163,9 @@ export function handleDrop(manager, e) {
             handleLiveToLiveDrop(manager, targetContainer, newIndex);
         } else if (info.isHidden) {
             handleRestoreHiddenToLive(manager, targetContainer, newIndex);
-        } else if (info.isPending) {
-            handleRestorePendingToLive(manager, targetContainer, newIndex);
         }
     }
-    manager.draggedTabInfo = null;
+    clearDragState(manager);
 }
 
 function handleLiveToLiveDrop(manager, targetContainer, newIndex) {
@@ -408,7 +438,6 @@ export function handleTouchEnd(manager, e) {
         manager.touchDragGhost.remove();
         manager.touchDragGhost = null;
         manager.lastTouchCoords = null; // Clear debounce state
-        manager.rootElement.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-        clearDropIndicators(manager.rootElement);
+        clearDragState(manager);
     }
 }
