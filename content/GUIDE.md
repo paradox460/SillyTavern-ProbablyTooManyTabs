@@ -190,7 +190,7 @@ When a column has a split (two panes stacked or side-by-side), you'll see a **Sp
 
 ### Pending Tabs
 
-Below each active column, a **Pending Tabs** section lists any panels that exist in the DOM but couldn't be placed (e.g. an extension that loaded after the layout was restored). Drag them into an active pane to make them live.
+Below each active column, a **Pending Tabs** section lists any panels that exist in the DOM but couldn't be placed (e.g. an extension that loaded after the layout was restored).
 
 ### Hidden Tabs
 

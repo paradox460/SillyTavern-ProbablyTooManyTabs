@@ -19,3 +19,5 @@ ARCHITECTURE.md
 theme-preview/
 tools/
 run-theme-preview.sh
+.codegraph/
+.skills/
