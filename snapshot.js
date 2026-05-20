@@ -25,7 +25,7 @@ import { createInfoPanel, PTMT_INFO_PANEL_ID, getPTMTInfoCurrentVersion } from '
 /** @typedef {import('./types.js').HiddenTab} HiddenTab */
 
 const SNAPSHOT_VERSION = 15;      // Minimum supported version
-const SNAPSHOT_CURRENT_VERSION = 21; // Version written by generateLayoutSnapshot
+const SNAPSHOT_CURRENT_VERSION = 22; // Version written by generateLayoutSnapshot
 
 // ─── Snapshot Migration Registry ─────────────────────────────────────────────
 // Each key is a source version; the value migrates that version to (key + 1).
@@ -192,6 +192,44 @@ const SNAPSHOT_MIGRATIONS = {
         }
 
         snap.version = 21;
+        return snap;
+    },
+    21: (snap) => {
+        // v21→v22: Add Card Gallery Viewer as a normal tab for existing users.
+        const CARD_GALLERY_SOURCE_ID = 'cardGalleryViewer';
+        const CARD_GALLERY_TAB = { sourceId: CARD_GALLERY_SOURCE_ID };
+
+        const hasCardGallery = (node) => {
+            if (!node) return false;
+            if (node.type === 'pane') {
+                return (node.tabs || []).some(t => t.sourceId === CARD_GALLERY_SOURCE_ID);
+            }
+            if (node.type === 'split') {
+                return (node.children || []).some(hasCardGallery);
+            }
+            return false;
+        };
+
+        const addCardGalleryToFirstPane = (node) => {
+            if (!node) return;
+            if (node.type === 'pane') {
+                if (!(node.tabs || []).some(t => t.sourceId === CARD_GALLERY_SOURCE_ID)) {
+                    node.tabs = [...(node.tabs || []), CARD_GALLERY_TAB];
+                }
+                return;
+            }
+            if (node.type === 'split' && node.children?.length) {
+                addCardGalleryToFirstPane(node.children[0]);
+            }
+        };
+
+        const alreadyHasCardGallery = ['left', 'center', 'right'].some(col => hasCardGallery(snap.columns?.[col]?.content));
+        if (!alreadyHasCardGallery) {
+            const targetColumn = snap.mode === 'mobile' ? 'center' : 'left';
+            addCardGalleryToFirstPane(snap.columns?.[targetColumn]?.content);
+        }
+
+        snap.version = 22;
         return snap;
     },
 };

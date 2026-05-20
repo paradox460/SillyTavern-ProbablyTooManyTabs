@@ -127,7 +127,8 @@ export class SettingsManager {
             { id: 'charlib-embedded-container', title: 'CharLib', icon: 'fa-book-open' },
             { id: 'trackerInterface', title: 'Tracker', icon: 'fa-chart-simple' },
             { id: 'vv--root', title: 'Variables', icon: 'fa-code' },
-            { id: 'etle--panel', title: 'Text Line Editor', icon: 'fa-pen-to-square' }
+            { id: 'etle--panel', title: 'Text Line Editor', icon: 'fa-pen-to-square' },
+            { id: 'cardGalleryViewer', title: 'Card Gallery', icon: 'fa-images' }
         ],
 
         presets: [],
@@ -135,7 +136,7 @@ export class SettingsManager {
         savedLayoutMobile: null,
 
         defaultLayout: {
-            version: 21,
+            version: 22,
             showIconsOnly: false,
             showLeft: true,
             showRight: true,
@@ -161,7 +162,8 @@ export class SettingsManager {
                             { sourceId: "cfgConfig" },
                             { sourceId: "logprobsViewer" },
                             { sourceId: "extensionSideBar" },
-                            { sourceId: "injectManagerSideBar" }
+                            { sourceId: "injectManagerSideBar" },
+                            { sourceId: "cardGalleryViewer" }
                         ]
                     },
                     ghostTabs: [
@@ -255,7 +257,7 @@ export class SettingsManager {
         uiTheme: 'sharp',
 
         mobileLayout: {
-            version: 21,
+            version: 22,
             showIconsOnly: true,
             showLeft: false,
             showRight: false,
@@ -299,7 +301,8 @@ export class SettingsManager {
                             { sourceId: "floatingPrompt" },
                             { sourceId: "dupeFinderPanel" },
                             { sourceId: "injectManagerSideBar" },
-                            { sourceId: "charlib-embedded-container" }
+                            { sourceId: "charlib-embedded-container" },
+                            { sourceId: "cardGalleryViewer" }
                         ]
                     },
                     ghostTabs: [

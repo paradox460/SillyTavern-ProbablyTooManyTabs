@@ -2,6 +2,14 @@
 
 ---
 
+## v0.12.4 — 2026-05-20
+
+*Extension Tabs*
+
+- ✦ New · **Card Gallery Tab** — added `cardGalleryViewer` support so the Card Gallery can be captured as a PTMT tab. Existing layouts will automatically migrate to include the new tab.
+
+---
+
 ## v0.12.3 — 2026-05-17
 
 *Extension Tabs*
