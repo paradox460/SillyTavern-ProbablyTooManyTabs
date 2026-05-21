@@ -405,7 +405,12 @@ export function createSettingsPanel(manager) {
 
     resetBtn.addEventListener('click', () => appApi.resetLayout());
 
-    globalGrid.append(resetBtn);
+    const resetShortcutInfo = el('div', { className: 'ptmt-setting-notice ptmt-grid-span-1' },
+        el('i', { className: 'fa-solid fa-keyboard ptmt-small-icon' }),
+        'Shortcut: Alt+Shift+R — Reset layout to default.'
+    );
+
+    globalGrid.append(resetBtn, resetShortcutInfo);
 
     const colorizerSettings = createDialogueColorizerSettings(settings);
     colorizerSettings.className = 'ptmt-settings-fieldset';

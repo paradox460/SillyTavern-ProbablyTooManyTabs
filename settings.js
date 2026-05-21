@@ -164,7 +164,6 @@ export class SettingsManager {
                             { sourceId: "logprobsViewer" },
                             { sourceId: "extensionSideBar" },
                             { sourceId: "injectManagerSideBar" },
-                            { sourceId: "etle--panel" },
                             { sourceId: "cardGalleryViewer" }
                         ]
                     },
@@ -191,6 +190,7 @@ export class SettingsManager {
                                     { sourceId: "sheld" },
                                     { sourceId: "rm_extensions_block" },
                                     { sourceId: "Backgrounds" },
+                                    { sourceId: "etle--panel" },
                                     { sourceId: "AdvancedFormatting" },
                                     { sourceId: "table_drawer_content" },
                                     { sourceId: "user-settings-block" }

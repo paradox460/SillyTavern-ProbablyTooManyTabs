@@ -213,6 +213,11 @@ export function createTabElement(title, pid, icon = null, options = {}) {
             detail: { sourceId, tabElement: t, tabRow: null }
           }));
         }
+      },
+      {
+        label: 'Hide Tab',
+        icon: 'fa-solid fa-eye-slash',
+        onClick: () => window.ptmtTabs?.hideTabById?.(pid)
       }
     ]);
   });

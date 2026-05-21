@@ -81,6 +81,7 @@ This section controls the visual aesthetic of the extension without affecting yo
 
 - **Switch to Mobile Layout / Switch to Desktop Layout** — swaps between single-column mobile and full desktop mode. **Reloads the page.**
 - **Reset Layout to Default** — resets the tab arrangement to the built-in default. Your settings (theme, colours, etc.) are preserved. **Cannot be undone.**
+- **Keyboard shortcut** — press `Alt+Shift+R` outside text inputs to trigger the same reset confirmation.
 
 ---
 
@@ -226,13 +227,17 @@ If something breaks or the UI looks wrong:
 1. Open **Layout Settings**
 2. Click **Reset Layout to Default**
 
-This restores the default tab arrangement. Your theme, colours, and other settings are not affected.
+Or press `Alt+Shift+R` while focus is not inside a text input.
+
+This restores the default tab arrangement after confirmation. Your theme, colours, and other settings are not affected.
 
 ---
 
 ## Mobile Mode
 
 Click **Switch to Mobile Layout** in Layout Settings. PTMT collapses everything into a single-column, touch-friendly layout with icon-only tabs. Switch back with **Switch to Desktop Layout**. Both actions reload the page.
+
+While PTMT is active, SillyTavern's default `mobile-styles.css` is disabled/removed so it cannot override the PTMT layout.
 
 ---
 

@@ -4,7 +4,8 @@
 // Zones: center (add as tab) | top | bottom | left | right (split directions)
 
 import { getPaneLayerCount, splitPaneWithPane, MAX_PANE_LAYERS } from './pane.js';
-import { openTab, getActivePane, moveTabIntoPaneAtIndex } from './tabs.js';
+import { openTab, getActivePane } from './tabs.js';
+import { moveTabTransaction } from './layout-transactions.js';
 import { getPanelById, throttle, getRefs, trackListener } from './utils.js';
 
 /** @typedef {import('./types.js').DragContext} DragContext */
@@ -322,14 +323,14 @@ function processDragEvent(ev, { performDrop = false } = {}) {
 
   if (existingTargetPane) {
     const targetIndex = existingTargetPane._tabStrip?.querySelectorAll('.ptmt-tab:not(.ptmt-view-settings)').length || 0;
-    moveTabIntoPaneAtIndex(panel, existingTargetPane, targetIndex);
+    moveTabTransaction({ panel, pane: existingTargetPane, index: targetIndex });
     openTab(panel.dataset.panelId);
     return;
   }
 
   if (!zone || zone === 'center' || !canSplit) {
     const index = computeDropIndexFromSession(cx, cy);
-    moveTabIntoPaneAtIndex(panel, paneUnder, index);
+    moveTabTransaction({ panel, pane: paneUnder, index });
     openTab(panel.dataset.panelId);
     return;
   }
@@ -353,7 +354,7 @@ function handleTabStripDrop(ctx, ev, performDrop) {
   const panel = getPanelById(ctx.pid);
   if (!panel) { hideDropIndicator(); return; }
 
-  moveTabIntoPaneAtIndex(panel, ctx.paneUnder, index);
+  moveTabTransaction({ panel, pane: ctx.paneUnder, index });
   hideDropIndicator();
   openTab(panel.dataset.panelId);
 }

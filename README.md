@@ -17,9 +17,11 @@ An extension that transforms the SillyTavern interface into a flexible tabbed wo
 - **Draggable tabs**: Move tabs between panes with drag-and-drop
 - **Pane splitting**: Split panes horizontally or vertically
 - **Layout persistence**: Layouts are automatically saved and restored
-- **Mobile support**: Optimized mobile layout with icon-only tabs
+- **Mobile support**: Optimized mobile layout with icon-only tabs; PTMT blocks SillyTavern's default `mobile-styles.css` while active so ST mobile CSS does not fight the layout
 - **Presets**: Save and load custom layouts
 - **Theme integration**: Custom colors and theme overrides
+- **Dialogue Colorizer**: Avatar-based quoted text and bubble tinting, with global and per-character/persona overrides
+- **Reset shortcut**: Press `Alt+Shift+R` outside text inputs to reset the layout after confirmation
 
 ---
 
@@ -45,6 +47,7 @@ An extension that transforms the SillyTavern interface into a flexible tabbed wo
 2. **Resize**: Drag column or pane dividers
 3. **Split panes**: Drag a tab to the edge of a pane
 4. **Collapse**: Click active tab to collapse pane
+5. **Reset layout**: Open Layout Settings and click **Reset Layout to Default**, or press `Alt+Shift+R` outside text inputs
 
 
 ---
@@ -81,11 +84,14 @@ SillyTavern-ProbablyTooManyTabs/
 ├── pane.js         # Pane management
 ├── layout.js       # Column layout
 ├── resizer.js      # Resize handling
-├── drag-drop.js    # Drag and drop
-├── snapshot.js     # Layout persistence
-├── settings.js     # Settings management
-├── style.css       # Styles (2200+ lines)
-└── __tests__/ # Test files
+├── drag-drop.js           # Drag and drop
+├── layout-transactions.js # User-visible layout mutations
+├── snapshot.js            # Layout persistence
+├── settings.js            # Settings management
+├── colorizer-settings.js  # Dialogue Colorizer settings schema
+├── st-mobile-styles.js    # Blocks ST mobile stylesheet while PTMT owns layout
+├── style.css              # Styles
+└── content/               # In-app Guide / What's New / More docs
 ```
 
 ---

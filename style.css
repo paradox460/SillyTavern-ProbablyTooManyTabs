@@ -491,7 +491,6 @@ body.bubblechat .welcomePanel {
 
 #extensionTopBarSearchInput {
   flex-grow: unset !important;
-  max-width: 200px !important;
 }
 
 

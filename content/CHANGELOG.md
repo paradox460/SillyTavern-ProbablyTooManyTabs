@@ -2,6 +2,16 @@
 
 ---
 
+## v0.12.6 — 2026-05-21
+
+*Colorizer Settings Module*
+
+- ✦ Refactor · **Centralized Colorizer Settings** — extracted all schema validation, defaults, key building, and persistence for character and persona custom colorizer settings into a dedicated `colorizer-settings.js` module. `character-colorizer-ui.js`, `dialogue-colorizer.js`, and `settings.js` now delegate to this single source of truth.
+- ✦ Refactor · **Schema-Validated Writes** — `updateCustomColorizerSettings` validates and coerces every field through `buildColorizerCustomEntry` before persisting, eliminating silent data corruption from stale or malformed entries.
+- ✦ Refactor · **Unified Key Builders** — `buildCharacterCustomColorizerKey`, `buildCustomColorizerKey`, and `resolveCustomColorizerSettings` provide a consistent API for looking up character and persona overrides across all call sites.
+
+---
+
 ## v0.12.5 — 2026-05-20
 
 *Layout Migration & Editor UX*

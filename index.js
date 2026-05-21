@@ -16,11 +16,12 @@ import { applyPaneOrientation, applySplitOrientation, openViewSettingsDialog, up
 import {
     createTabFromContent, moveNodeIntoTab, listTabs,
     openTab, closeTabById, setDefaultPanelById, isTabHidden,
-    moveTabIntoPaneAtIndex, destroyTabById,
+    destroyTabById,
     setActivePanelInPane, setTabCollapsed, getActivePane,
 } from './tabs.js';
 import { attachResizer, setSplitOrientation, updateResizerDisabledStates, checkPaneForIconMode, initGlobalResizeObserver } from './resizer.js';
 import { enableInteractions } from './drag-drop.js';
+import { moveTabTransaction } from './layout-transactions.js';
 import { removeMouseDownDrawerHandler, openAllDrawersJq, moveToMovingDivs, overrideDelegatedEventHandler, initDrawerObserver, moveBg1ToSheld } from './misc-helpers.js';
 import { initDemotionObserver, updatePendingTabColumn } from './pending-tabs.js';
 import { positionAnchor } from './positionAnchor.js';
@@ -32,10 +33,12 @@ import { initAvatarExpressionSync } from './avatar-expression-sync.js';
 import { initInspectorScaleControl, cleanupInspectorScaleControl } from './ui-injection.js';
 import { initThemeColors } from './theme-colors.js';
 import { initMessageRail } from './message-rail.js';
+import { initStMobileStylesBlocker } from './st-mobile-styles.js';
 
 // ─── Subsystem Init ──────────────────────────────────────────────────────────
 
 function initSubsystems() {
+    initStMobileStylesBlocker();
     positionAnchor();
     initStatusBar();
     initWorldInfoStatusBar();
@@ -201,10 +204,51 @@ function createSaveHandler(state) {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 function createApi(state) {
+    const hideTabById = (pid, index = null) => {
+        const panel = getPanelById(pid);
+        const sourceId = panel?.dataset?.sourceId;
+        if (!pid || !sourceId) return false;
+        if (sourceId === 'ptmt-settings-wrapper-content' || sourceId === 'ptmt-info-wrapper-content') {
+            alert('This PTMT panel cannot be hidden. It must remain in one of the columns.');
+            return false;
+        }
+
+        const tab = getTabById(pid);
+        const hiddenInfo = {
+            sourceId,
+            active: tab?.classList.contains('active') === true,
+            collapsed: tab?.classList.contains('collapsed') === true
+        };
+
+        const content = panel.querySelector('.ptmt-panel-content > *:not(script)');
+        if (content) {
+            let stagingArea = document.querySelector(SELECTORS.STAGING_AREA);
+            if (!stagingArea) {
+                stagingArea = document.createElement('div');
+                stagingArea.id = SELECTORS.STAGING_AREA.substring(1);
+                stagingArea.style.display = 'none';
+                document.body.appendChild(stagingArea);
+            }
+            stagingArea.appendChild(content);
+        }
+
+        destroyTabById(pid);
+
+        const layout = generateLayoutSnapshot();
+        if (!layout) return false;
+        if (!layout.hiddenTabs) layout.hiddenTabs = [];
+        layout.hiddenTabs = layout.hiddenTabs.filter(h => (typeof h === 'string' ? h : h.sourceId) !== sourceId);
+        const insertIndex = Number.isInteger(index) ? Math.max(0, Math.min(index, layout.hiddenTabs.length)) : layout.hiddenTabs.length;
+        layout.hiddenTabs.splice(insertIndex, 0, hiddenInfo);
+        settings.update({ [settings.getActiveLayoutKey()]: layout });
+        window.dispatchEvent(new CustomEvent(EVENTS.LAYOUT_CHANGED, { detail: { reason: 'tabHidden' } }));
+        return true;
+    };
+
     const api = {
         createTabFromContent, moveNodeIntoTab, listTabs,
-        openTab, closeTabById, getPanelById, getTabById, setDefaultPanelById, isTabHidden, _refs: getRefs,
-        moveTabIntoPaneAtIndex, openViewSettingsDialog, readPaneViewSettings, writePaneViewSettings,
+        openTab, closeTabById, hideTabById: hideTabById, getPanelById, getTabById, setDefaultPanelById, isTabHidden, _refs: getRefs,
+        moveTabIntoPaneAtIndex: (panel, pane, index) => moveTabTransaction({ panel, pane, index }), openViewSettingsDialog, readPaneViewSettings, writePaneViewSettings,
         setActivePanelInPane, setTabCollapsed,
         applyPaneOrientation, attachResizer, setSplitOrientation, updateSplitCollapsedState, applySplitOrientation,
         generateLayoutSnapshot, destroyTabById, updatePendingTabColumn, checkPaneForIconMode,
@@ -385,6 +429,25 @@ function bindLayoutReactions(state, api, saveCurrentLayoutDebounced) {
     trackListener(window, EVENTS.SETTINGS_CHANGED, handleSettingsChanged);
 
     return applyOverrides;
+}
+
+function isEditableShortcutTarget(target) {
+    return !!target?.closest?.('input, textarea, select, [contenteditable="true"]');
+}
+
+function initLayoutResetShortcut(appApi) {
+    const handler = (event) => {
+        if (!event.altKey || !event.shiftKey || event.ctrlKey || event.metaKey) return;
+        if (event.key.toLowerCase() !== 'r') return;
+        if (isEditableShortcutTarget(event.target)) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        appApi.resetLayout();
+    };
+
+    document.addEventListener('keydown', handler, true);
+    trackListener(document, 'keydown', handler, true);
 }
 
 function bindSwipeHandlers() {
@@ -605,6 +668,7 @@ function postInit(state, applyOverrides) {
         moveToMovingDivs(['expression-plus-wrapper', 'charlib-embedded-container']);
         loadInitialLayout(api);
         postInit(state, applyOverrides);
+        initLayoutResetShortcut(api);
         bindSwipeHandlers();
         bindAvatarClickOverride();
         initDemotionObserver(api);
