@@ -215,7 +215,7 @@ A **Hidden Tabs** storage section at the bottom holds tabs you've intentionally 
 
 Right-clicking within PTMT opens context menus:
 
-- **Right-click a tab** → **Edit Tab** — opens the Tab Settings popup (rename, icon, colour).
+- **Right-click a tab** → **Edit Tab** — opens the Tab Settings popup (rename, icon, colour). **Hide Tab** — removes the tab from the layout and sends it to the Hidden Tabs storage in the Layout Editor. Drag it back to any pane to restore it.
 - **Right-click an empty area of the tab strip** → **Edit Pane** (opens Pane Settings), **Icons Only / Show Labels** toggle, and **Cycle Tab Strip Mode** (cycles between Normal → Auto-Hide → Shy for that pane).
 
 ---

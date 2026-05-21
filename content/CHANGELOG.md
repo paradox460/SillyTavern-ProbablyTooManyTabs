@@ -9,6 +9,7 @@
 - ✦ Refactor · **Centralized Colorizer Settings** — extracted all schema validation, defaults, key building, and persistence for character and persona custom colorizer settings into a dedicated `colorizer-settings.js` module. `character-colorizer-ui.js`, `dialogue-colorizer.js`, and `settings.js` now delegate to this single source of truth.
 - ✦ Refactor · **Schema-Validated Writes** — `updateCustomColorizerSettings` validates and coerces every field through `buildColorizerCustomEntry` before persisting, eliminating silent data corruption from stale or malformed entries.
 - ✦ Refactor · **Unified Key Builders** — `buildCharacterCustomColorizerKey`, `buildCustomColorizerKey`, and `resolveCustomColorizerSettings` provide a consistent API for looking up character and persona overrides across all call sites.
+- ✔ Fix · **Guide — Hide Tab** — the Right-Click Context Menu section of the Guide now documents the **Hide Tab** option (removes tab to Hidden Tabs storage; drag back from Layout Editor to restore).
 
 ---
 
