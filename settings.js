@@ -2,6 +2,7 @@
 
 import { saveSettingsDebounced, saveSettings } from '../../../../script.js';
 import { extension_settings } from '../../../extensions.js';
+import { migrateColorizerSettings } from './colorizer-settings.js';
 
 /** @typedef {import('./types.js').PTMTSettings} PTMTSettings */
 /** @typedef {import('./types.js').PanelMapping} PanelMapping */
@@ -64,15 +65,15 @@ export class SettingsManager {
         dialogueColorizerPersonaBubbleGradientStops: [],
         dialogueColorizerPersonaBubbleGradientAngle: 125,
         dialogueColorizerSettingsVersion: 2,
-        
+
         // Per-character custom colorizer settings
         charCustomColorizerEnabled: [], // Array of char names with custom colorizer enabled
         charCustomColorizerSettings: {}, // Object keyed by char name with custom settings
-        
+
         // Per-persona custom colorizer settings
         personaCustomColorizerEnabled: [], // Array of persona filenames with custom colorizer enabled
         personaCustomColorizerSettings: {}, // Object keyed by persona filename with custom settings
-        
+
         // Avatar dimensions
         avatarBaseHeight: '14vh',
         avatarBaseWidth: '8vw',
@@ -589,26 +590,7 @@ export class SettingsManager {
     }
 
     migrateDialogueColorizerSettings(loadedSettings) {
-        const currentVersion = SettingsManager.defaultSettings.dialogueColorizerSettingsVersion;
-        const loadedVersion = Number(loadedSettings.dialogueColorizerSettingsVersion || 0);
-        if (loadedVersion >= currentVersion) return;
-
-        const hasCustomColorizerSettings =
-            (Array.isArray(loadedSettings.charCustomColorizerEnabled) && loadedSettings.charCustomColorizerEnabled.length > 0) ||
-            (loadedSettings.charCustomColorizerSettings && Object.keys(loadedSettings.charCustomColorizerSettings).length > 0) ||
-            (Array.isArray(loadedSettings.personaCustomColorizerEnabled) && loadedSettings.personaCustomColorizerEnabled.length > 0) ||
-            (loadedSettings.personaCustomColorizerSettings && Object.keys(loadedSettings.personaCustomColorizerSettings).length > 0);
-
-        if (hasCustomColorizerSettings) {
-            console.log('[PTMT] Resetting legacy Dialogue Colorizer per-character/persona settings for v2 key format.');
-            loadedSettings.charCustomColorizerEnabled = [];
-            loadedSettings.charCustomColorizerSettings = {};
-            loadedSettings.personaCustomColorizerEnabled = [];
-            loadedSettings.personaCustomColorizerSettings = {};
-        }
-
-        loadedSettings.dialogueColorizerSettingsVersion = currentVersion;
-        return true;
+        return migrateColorizerSettings(loadedSettings, SettingsManager.defaultSettings.dialogueColorizerSettingsVersion);
     }
 
     getActiveLayoutKey() {

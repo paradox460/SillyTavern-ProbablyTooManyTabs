@@ -10,11 +10,12 @@ import { getContext } from '../../../extensions.js';
 import { settings } from './settings.js';
 import { el, trackObserver, debounce, extractColorsFromImage, sortColorsByLightness } from './utils.js';
 import { GradientEditor } from './gradient-editor.js';
+import { extractAvatarFilenameFromUrl } from './colorizer-helpers.js';
 import {
-    buildCharacterColorizerKeyFromParts,
-    extractAvatarFilenameFromUrl,
-    normalizeBubbleMode,
-} from './colorizer-helpers.js';
+    buildCharacterCustomColorizerKey,
+    resolveCustomColorizerSettings,
+    updateCustomColorizerSettings,
+} from './colorizer-settings.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -413,13 +414,11 @@ function loadCharacterSettings() {
         const cleanFileName = extractAvatarFilenameFromUrl(avatarSrc, 'unknown.png');
 
         // Build unique key: name + avatar to avoid collisions when multiple cards have same name
-        currentCharacterId = buildCharacterColorizerKeyFromParts(charName, cleanFileName);
+        currentCharacterId = buildCharacterCustomColorizerKey(charName, cleanFileName);
         currentAvatarFilename = cleanFileName;
-        const enabledList = settings.get('charCustomColorizerEnabled') ?? [];
-        const customSettingsMap = settings.get('charCustomColorizerSettings') ?? {};
-
-        const isEnabled = enabledList.includes(currentCharacterId);
-        const customSettings = customSettingsMap[currentCharacterId] || {};
+        const resolved = resolveCustomColorizerSettings(settings, 'character', currentCharacterId);
+        const isEnabled = resolved.enabled;
+        const customSettings = resolved.value;
 
         console.log(`[PTMT] Character Editor: "${charName}" (${cleanFileName}) → Key: "${currentCharacterId}" | Enabled: ${isEnabled}`);
         console.log(`[PTMT]   ↳ bubbleOpacity: ${customSettings.bubbleOpacity} (${typeof customSettings.bubbleOpacity})`);
@@ -435,7 +434,7 @@ function loadCharacterSettings() {
         // Update range controls & opacity slider BEFORE color pickers
         // (color picker setAttribute triggers change events that call updateCharacterSettings)
         charColorizerUI.targetSelect.value = String(customSettings.colorizeTarget ?? 3);
-        const bubbleMode = normalizeBubbleMode(customSettings, 'gradient');
+        const bubbleMode = customSettings.bubbleMode;
         charColorizerUI.bubbleModeSelect.value = bubbleMode;
 
         const opacityValue = customSettings.bubbleOpacity ?? 0.1;
@@ -501,7 +500,7 @@ function loadCharacterSettings() {
  * Save character colorizer settings when UI changes
  * Only saves when the enable checkbox is turned ON
  */
-function updateCharacterSettings() {
+async function updateCharacterSettings() {
     if (isUpdatingCharSettings) return;
 
     if (!charColorizerUI || !currentCharacterId || !currentAvatarFilename) return;
@@ -509,91 +508,46 @@ function updateCharacterSettings() {
     isUpdatingCharSettings = true;
     try {
         const isEnabled = charColorizerUI.enableCheckbox.checked;
-        const enabledList = settings.get('charCustomColorizerEnabled') ?? [];
-        const customSettingsMap = settings.get('charCustomColorizerSettings') ?? {};
-
-        if (isEnabled) {
-            // Add to enabled list if not already there
-            if (!enabledList.includes(currentCharacterId)) {
-                enabledList.push(currentCharacterId);
-            }
-
-            // Get existing settings for this character (if any)
-            const oldSettings = customSettingsMap[currentCharacterId] || {
-                dialogSource: 'avatar_vibrant',
-                dialogStatic: '#da6745ff',
-                bubbleStatic1: '#da6745ff',
-                bubbleStatic2: '#da6745ff',
-                colorizeTarget: 3,
-                bubbleOpacity: 0.1,
-            };
-
-            // Build new settings, only updating fields that may have changed
-            // Colors only update if explicitly changed by color picker events (via latest* vars)
-            const gradientStops = charColorizerUI.gradientEditor ? charColorizerUI.gradientEditor.stops : [];
-            const gradientAngle = charColorizerUI.gradientEditor ? charColorizerUI.gradientEditor.angle : 225;
-            const newSettings = {
-                dialogSource: charColorizerUI.dialogSrcSelect.value,
-                dialogStatic: latestDialogStaticColor,
-                bubbleMode: charColorizerUI.bubbleModeSelect.value,
-                bubbleStatic1: latestBubbleStatic1,
-                bubbleStatic2: latestBubbleStatic2,
-                colorizeTarget: parseInt(charColorizerUI.targetSelect.value, 10),
-                bubbleOpacity: parseFloat(charColorizerUI.opacitySlider.value),
-                bubbleGradientStops: gradientStops,
-                bubbleGradientAngle: gradientAngle,
-            };
-
-            const gradientStopsChanged = JSON.stringify(oldSettings.bubbleGradientStops ?? []) !== JSON.stringify(gradientStops) ||
-                (oldSettings.bubbleGradientAngle ?? 225) !== gradientAngle;
-
-            // Detect what actually changed
-            const colorSourceChanged =
-                oldSettings.dialogSource !== newSettings.dialogSource ||
-                oldSettings.bubbleMode !== newSettings.bubbleMode ||
-                oldSettings.dialogStatic !== newSettings.dialogStatic ||
-                oldSettings.bubbleStatic1 !== newSettings.bubbleStatic1 ||
-                oldSettings.bubbleStatic2 !== newSettings.bubbleStatic2;
-
-            const targetChanged = oldSettings.colorizeTarget !== newSettings.colorizeTarget;
-            const opacityChanged = oldSettings.bubbleOpacity !== newSettings.bubbleOpacity;
-
-            // Only log/save if something actually changed
-            if (colorSourceChanged || targetChanged || opacityChanged || gradientStopsChanged) {
-                console.log(`[PTMT] ✓ Saving character "${currentCharacterId}" colorizer settings:`, newSettings);
-                customSettingsMap[currentCharacterId] = newSettings;
-
-                settings.update({
-                    charCustomColorizerEnabled: enabledList,
-                    charCustomColorizerSettings: customSettingsMap,
-                });
-
-                // Trigger refresh with appropriate cache strategy
-                if (colorSourceChanged || gradientStopsChanged) {
-                    // Color source or gradient stops changed - clear cache to re-extract
-                    window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh', { detail: { fullRefresh: true } }));
-                } else {
-                    // Only visual changes (target, modes, opacity) - keep cache
-                    window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh', { detail: { fullRefresh: false } }));
-                }
-            } else {
-                console.log(`[PTMT] No changes detected, skipping save`);
-            }
-        } else {
-            // If disabling, only update if this character was previously enabled
-            if (enabledList.includes(currentCharacterId)) {
-                const idx = enabledList.indexOf(currentCharacterId);
-                enabledList.splice(idx, 1);
-                delete customSettingsMap[currentCharacterId];
-
-                settings.update({
-                    charCustomColorizerEnabled: enabledList,
-                    charCustomColorizerSettings: customSettingsMap,
-                });
-
-                // Trigger colorizer update
+        if (!isEnabled) {
+            const wasEnabled = resolveCustomColorizerSettings(settings, 'character', currentCharacterId).enabled;
+            if (wasEnabled) {
+                await updateCustomColorizerSettings(settings, 'character', currentCharacterId, { enabled: false });
                 window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh'));
             }
+            return;
+        }
+
+        const resolved = resolveCustomColorizerSettings(settings, 'character', currentCharacterId);
+        const wasEnabled = resolved.enabled;
+        const oldSettings = resolved.value;
+        const gradientStops = charColorizerUI.gradientEditor ? charColorizerUI.gradientEditor.stops : [];
+        const gradientAngle = charColorizerUI.gradientEditor ? charColorizerUI.gradientEditor.angle : 225;
+        const patch = {
+            dialogSource: charColorizerUI.dialogSrcSelect.value,
+            dialogStatic: latestDialogStaticColor,
+            bubbleMode: charColorizerUI.bubbleModeSelect.value,
+            bubbleStatic1: latestBubbleStatic1,
+            bubbleStatic2: latestBubbleStatic2,
+            colorizeTarget: parseInt(charColorizerUI.targetSelect.value, 10),
+            bubbleOpacity: parseFloat(charColorizerUI.opacitySlider.value),
+            bubbleGradientStops: gradientStops,
+            bubbleGradientAngle: gradientAngle,
+        };
+
+        const gradientStopsChanged = JSON.stringify(oldSettings.bubbleGradientStops ?? []) !== JSON.stringify(gradientStops) ||
+            (oldSettings.bubbleGradientAngle ?? 225) !== gradientAngle;
+        const colorSourceChanged =
+            oldSettings.dialogSource !== patch.dialogSource ||
+            oldSettings.bubbleMode !== patch.bubbleMode ||
+            oldSettings.dialogStatic !== patch.dialogStatic ||
+            oldSettings.bubbleStatic1 !== patch.bubbleStatic1 ||
+            oldSettings.bubbleStatic2 !== patch.bubbleStatic2;
+        const targetChanged = oldSettings.colorizeTarget !== patch.colorizeTarget;
+        const opacityChanged = oldSettings.bubbleOpacity !== patch.bubbleOpacity;
+
+        if (!wasEnabled || colorSourceChanged || targetChanged || opacityChanged || gradientStopsChanged) {
+            await updateCustomColorizerSettings(settings, 'character', currentCharacterId, { enabled: true, patch });
+            window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh', { detail: { fullRefresh: colorSourceChanged || gradientStopsChanged } }));
         }
     } finally {
         isUpdatingCharSettings = false;
@@ -695,11 +649,10 @@ function loadPersonaSettings() {
 
         const cleanFileName = extractAvatarFilenameFromUrl(src, 'user.png');
 
-        const enabledList = settings.get('personaCustomColorizerEnabled') ?? [];
+        const resolved = resolveCustomColorizerSettings(settings, 'persona', cleanFileName);
+        const isEnabled = resolved.enabled;
+        const customSettings = resolved.value;
         const customSettingsMap = settings.get('personaCustomColorizerSettings') ?? {};
-
-        const isEnabled = enabledList.includes(cleanFileName);
-        const customSettings = customSettingsMap[cleanFileName] || {};
 
         console.log(`[PTMT] Persona Editor: "${cleanFileName}" | Enabled: ${isEnabled} | Saved Files: [${Object.keys(customSettingsMap).join(', ')}]`);
         console.log(`[PTMT]   ↳ bubbleOpacity: ${customSettings.bubbleOpacity} (${typeof customSettings.bubbleOpacity})`);
@@ -714,7 +667,7 @@ function loadPersonaSettings() {
 
         // Update range controls & opacity slider BEFORE color pickers
         personaColorizerUI.targetSelect.value = String(customSettings.colorizeTarget ?? 3);
-        const bubbleMode = normalizeBubbleMode(customSettings, 'gradient');
+        const bubbleMode = customSettings.bubbleMode;
         personaColorizerUI.bubbleModeSelect.value = bubbleMode;
 
         const opacityValue = customSettings.bubbleOpacity ?? 0.1;
@@ -819,107 +772,59 @@ function refreshBubbleColorSwatch(ui, isPersona) {
  * Save persona colorizer settings when UI changes
  * Only saves when the enable checkbox is turned ON
  */
-function updatePersonaSettings() {
-    if (isUpdatingPersonaSettings) return; // Guard against recursion
-
+async function updatePersonaSettings() {
+    if (isUpdatingPersonaSettings) return;
     if (!personaColorizerUI) return;
 
     isUpdatingPersonaSettings = true;
     try {
-        // Get current persona filename
         const userAvatarImg = document.querySelector('#user_avatar_block .avatar img');
-        if (!userAvatarImg) return;
-
-        const src = userAvatarImg.getAttribute('src');
+        const src = userAvatarImg?.getAttribute('src');
         if (!src) return;
 
         const cleanFileName = extractAvatarFilenameFromUrl(src, 'user.png');
-
         const isEnabled = personaColorizerUI.enableCheckbox.checked;
-        const enabledList = settings.get('personaCustomColorizerEnabled') ?? [];
-        const customSettingsMap = settings.get('personaCustomColorizerSettings') ?? {};
 
-        if (isEnabled) {
-            // Add to enabled list if not already there
-            if (!enabledList.includes(cleanFileName)) {
-                enabledList.push(cleanFileName);
-            }
-
-            // Get existing settings for this persona (if any)
-            const oldSettings = customSettingsMap[cleanFileName] || {
-                dialogSource: 'avatar_vibrant',
-                dialogStatic: '#537fddff',
-                bubbleStatic1: '#537fddff',
-                bubbleStatic2: '#537fddff',
-                colorizeTarget: 3,
-                bubbleOpacity: 0.1,
-            };
-
-            // Build new settings, only updating fields that may have changed
-            const gradientStops = personaColorizerUI.gradientEditor ? personaColorizerUI.gradientEditor.stops : [];
-            const gradientAngle = personaColorizerUI.gradientEditor ? personaColorizerUI.gradientEditor.angle : 125;
-            const newSettings = {
-                dialogSource: personaColorizerUI.dialogSrcSelect.value,
-                dialogStatic: latestPersonaDialogColor,
-                bubbleMode: personaColorizerUI.bubbleModeSelect.value,
-                bubbleStatic1: latestPersonaBubble1,
-                bubbleStatic2: latestPersonaBubble2,
-                colorizeTarget: parseInt(personaColorizerUI.targetSelect.value, 10),
-                bubbleOpacity: parseFloat(personaColorizerUI.opacitySlider.value),
-                bubbleGradientStops: gradientStops,
-                bubbleGradientAngle: gradientAngle,
-            };
-
-            const gradientStopsChanged = JSON.stringify(oldSettings.bubbleGradientStops ?? []) !== JSON.stringify(gradientStops) ||
-                (oldSettings.bubbleGradientAngle ?? 125) !== gradientAngle;
-
-            // Detect what actually changed
-            const colorSourceChanged =
-                oldSettings.dialogSource !== newSettings.dialogSource ||
-                oldSettings.bubbleMode !== newSettings.bubbleMode ||
-                oldSettings.dialogStatic !== newSettings.dialogStatic ||
-                oldSettings.bubbleStatic1 !== newSettings.bubbleStatic1 ||
-                oldSettings.bubbleStatic2 !== newSettings.bubbleStatic2;
-
-            const targetChanged = oldSettings.colorizeTarget !== newSettings.colorizeTarget;
-            const opacityChanged = oldSettings.bubbleOpacity !== newSettings.bubbleOpacity;
-
-            // Only log/save if something actually changed
-            if (colorSourceChanged || targetChanged || opacityChanged || gradientStopsChanged) {
-                console.log(`[PTMT] ✓ Saving persona "${cleanFileName}" colorizer settings:`, newSettings);
-                customSettingsMap[cleanFileName] = newSettings;
-
-                settings.update({
-                    personaCustomColorizerEnabled: enabledList,
-                    personaCustomColorizerSettings: customSettingsMap,
-                });
-
-                // Trigger refresh with appropriate cache strategy
-                if (colorSourceChanged || gradientStopsChanged) {
-                    // Color source or gradient stops changed - clear cache to re-extract
-                    window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh', { detail: { fullRefresh: true } }));
-                } else {
-                    // Only visual changes (target, modes, opacity) - keep cache
-                    window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh', { detail: { fullRefresh: false } }));
-                }
-            } else {
-                console.log(`[PTMT] No changes detected, skipping save`);
-            }
-        } else {
-            // If disabling, only update if this persona was previously enabled
-            if (enabledList.includes(cleanFileName)) {
-                const idx = enabledList.indexOf(cleanFileName);
-                enabledList.splice(idx, 1);
-                delete customSettingsMap[cleanFileName];
-
-                settings.update({
-                    personaCustomColorizerEnabled: enabledList,
-                    personaCustomColorizerSettings: customSettingsMap,
-                });
-
-                // Trigger colorizer update
+        if (!isEnabled) {
+            const wasEnabled = resolveCustomColorizerSettings(settings, 'persona', cleanFileName).enabled;
+            if (wasEnabled) {
+                await updateCustomColorizerSettings(settings, 'persona', cleanFileName, { enabled: false });
                 window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh'));
             }
+            return;
+        }
+
+        const resolved = resolveCustomColorizerSettings(settings, 'persona', cleanFileName);
+        const wasEnabled = resolved.enabled;
+        const oldSettings = resolved.value;
+        const gradientStops = personaColorizerUI.gradientEditor ? personaColorizerUI.gradientEditor.stops : [];
+        const gradientAngle = personaColorizerUI.gradientEditor ? personaColorizerUI.gradientEditor.angle : 125;
+        const patch = {
+            dialogSource: personaColorizerUI.dialogSrcSelect.value,
+            dialogStatic: latestPersonaDialogColor,
+            bubbleMode: personaColorizerUI.bubbleModeSelect.value,
+            bubbleStatic1: latestPersonaBubble1,
+            bubbleStatic2: latestPersonaBubble2,
+            colorizeTarget: parseInt(personaColorizerUI.targetSelect.value, 10),
+            bubbleOpacity: parseFloat(personaColorizerUI.opacitySlider.value),
+            bubbleGradientStops: gradientStops,
+            bubbleGradientAngle: gradientAngle,
+        };
+
+        const gradientStopsChanged = JSON.stringify(oldSettings.bubbleGradientStops ?? []) !== JSON.stringify(gradientStops) ||
+            (oldSettings.bubbleGradientAngle ?? 125) !== gradientAngle;
+        const colorSourceChanged =
+            oldSettings.dialogSource !== patch.dialogSource ||
+            oldSettings.bubbleMode !== patch.bubbleMode ||
+            oldSettings.dialogStatic !== patch.dialogStatic ||
+            oldSettings.bubbleStatic1 !== patch.bubbleStatic1 ||
+            oldSettings.bubbleStatic2 !== patch.bubbleStatic2;
+        const targetChanged = oldSettings.colorizeTarget !== patch.colorizeTarget;
+        const opacityChanged = oldSettings.bubbleOpacity !== patch.bubbleOpacity;
+
+        if (!wasEnabled || colorSourceChanged || targetChanged || opacityChanged || gradientStopsChanged) {
+            await updateCustomColorizerSettings(settings, 'persona', cleanFileName, { enabled: true, patch });
+            window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh', { detail: { fullRefresh: colorSourceChanged || gradientStopsChanged } }));
         }
     } finally {
         isUpdatingPersonaSettings = false;

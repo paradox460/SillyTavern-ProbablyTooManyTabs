@@ -11,16 +11,17 @@ import { settings } from './settings.js';
 import { debounce, trackObserver, extractColorsFromImage, sortColorsByLightness } from './utils.js';
 import {
     DEFAULT_COLORIZER_RGB,
-    buildCharacterColorizerKey,
     buildColorizerCacheKey,
-    buildPersonaColorizerKey,
     extractAvatarFilenameFromUrl,
     hexToRgbaWithAlpha,
-    normalizeBubbleMode,
     normalizeHexColor,
     rgbToHex,
     rgbToHsl,
 } from './colorizer-helpers.js';
+import {
+    buildCustomColorizerKey,
+    resolveCustomColorizerSettings,
+} from './colorizer-settings.js';
 
 const DEFAULT_HEX = rgbToHex(DEFAULT_COLORIZER_RGB);
 
@@ -105,23 +106,15 @@ function getColorizerControlSettings(type, info) {
         };
     }
 
-    // Build unique key based on type
-    const characterKey = isPersona 
-        ? buildPersonaColorizerKey(info.uid, info.domAvatarUrl)
-        : buildCharacterColorizerKey(info.uid, info.domAvatarUrl);
-    
-    // Check if this character/persona has custom settings enabled
-    const enabledList = isPersona ? settings.get('personaCustomColorizerEnabled') ?? [] : settings.get('charCustomColorizerEnabled') ?? [];
-    const customSettingsMap = isPersona ? settings.get('personaCustomColorizerSettings') ?? {} : settings.get('charCustomColorizerSettings') ?? {};
-    
-    if (enabledList.includes(characterKey) && customSettingsMap[characterKey]) {
-        // Use custom settings
-        const custom = customSettingsMap[characterKey];
+    const characterKey = buildCustomColorizerKey(type, info.uid, info.domAvatarUrl);
+    const resolved = resolveCustomColorizerSettings(settings, type, characterKey);
+    if (resolved.enabled && resolved.raw) {
+        const custom = resolved.value;
         console.log(`[PTMT] ✓ Using CUSTOM colorizer for ${type} "${characterKey}" — opacity=${custom.bubbleOpacity} | full:`, custom);
         return {
-            target: custom.colorizeTarget ?? 3,
-            bubbleMode: normalizeBubbleMode(custom, 'gradient'),
-            opacity: custom.bubbleOpacity ?? 0.1,
+            target: custom.colorizeTarget,
+            bubbleMode: custom.bubbleMode,
+            opacity: custom.bubbleOpacity,
         };
     }
     
@@ -154,25 +147,16 @@ function getSettingsForType(type, info) {
 
     const isPersona = type === 'persona';
     
-    // Build unique key based on type
-    const characterKey = isPersona 
-        ? buildPersonaColorizerKey(info.uid, info.domAvatarUrl)
-        : buildCharacterColorizerKey(info.uid, info.domAvatarUrl);
-    
-    // Check if this character/persona has custom settings enabled
-    const enabledList = isPersona ? settings.get('personaCustomColorizerEnabled') ?? [] : settings.get('charCustomColorizerEnabled') ?? [];
-    const customSettingsMap = isPersona ? settings.get('personaCustomColorizerSettings') ?? {} : settings.get('charCustomColorizerSettings') ?? {};
-    
-    if (enabledList.includes(characterKey) && customSettingsMap[characterKey]) {
-        // Use custom settings
-        const custom = customSettingsMap[characterKey];
-        const defaultStatic = isPersona ? '#537fddff' : '#da6745ff';
+    const characterKey = buildCustomColorizerKey(type, info.uid, info.domAvatarUrl);
+    const resolved = resolveCustomColorizerSettings(settings, type, characterKey);
+    if (resolved.enabled && resolved.raw) {
+        const custom = resolved.value;
         const result = {
-            dialogSource: custom.dialogSource ?? 'avatar_vibrant',
-            dialogStatic: custom.dialogStatic ?? defaultStatic,
-            bubbleSource: custom.bubbleSource ?? 'avatar_vibrant',
-            bubbleStatic1: custom.bubbleStatic1 ?? defaultStatic,
-            bubbleStatic2: custom.bubbleStatic2 ?? defaultStatic,
+            dialogSource: custom.dialogSource,
+            dialogStatic: custom.dialogStatic,
+            bubbleSource: 'avatar_vibrant',
+            bubbleStatic1: custom.bubbleStatic1,
+            bubbleStatic2: custom.bubbleStatic2,
         };
         console.log(`[PTMT] getSettingsForType() using CUSTOM for ${characterKey}:`, result, `| full:`, custom);
         return result;
@@ -270,14 +254,10 @@ async function getCharacterColor(info) {
 
 function getCustomColorizerSettings(info) {
     if (!info || info.type === 'system') return null;
-    const isPersona = info.type === 'persona';
-    const characterKey = isPersona
-        ? buildPersonaColorizerKey(info.uid, info.domAvatarUrl)
-        : buildCharacterColorizerKey(info.uid, info.domAvatarUrl);
-    const enabledList = isPersona ? settings.get('personaCustomColorizerEnabled') ?? [] : settings.get('charCustomColorizerEnabled') ?? [];
-    const customSettingsMap = isPersona ? settings.get('personaCustomColorizerSettings') ?? {} : settings.get('charCustomColorizerSettings') ?? {};
-    if (enabledList.includes(characterKey) && customSettingsMap[characterKey]) {
-        return customSettingsMap[characterKey];
+    const characterKey = buildCustomColorizerKey(info.type, info.uid, info.domAvatarUrl);
+    const resolved = resolveCustomColorizerSettings(settings, info.type, characterKey);
+    if (resolved.enabled && resolved.raw) {
+        return resolved.value;
     }
     return null;
 }
