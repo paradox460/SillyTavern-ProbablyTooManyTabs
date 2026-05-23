@@ -106,7 +106,8 @@ SillyTavern-ProbablyTooManyTabs/
 
 ## Support Development
 
-[Patreon](https://www.patreon.com/cw/IceFog72)
+
+[No scam Patreon](https://www.patreon.com/cw/IceFog72)
 
 ---
 

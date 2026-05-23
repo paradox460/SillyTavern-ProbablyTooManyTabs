@@ -89,5 +89,5 @@ Adds a UI panel for managing custom CSS properties (variables) directly from wit
 If PTMT helps your workflow, consider supporting further development:
 
 - [💬 Discord — IceFog's AI Brew Bar](https://discord.gg/2tJcWeMjFQ)
-- [❤️ Patreon](https://www.patreon.com/cw/IceFog72)
+- [No scam Patreon](https://www.patreon.com/cw/IceFog72)
 - [🐙 GitHub](https://github.com/IceFog72)
