@@ -107,7 +107,7 @@ SillyTavern-ProbablyTooManyTabs/
 ## Support Development
 
 
-[No scam Patreon](https://www.patreon.com/cw/IceFog72)
+No more Patreon because they scam.
 
 ---
 

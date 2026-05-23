@@ -434,7 +434,7 @@ export function createSettingsPanel(manager) {
     const supportLinksContainer = el('div', { className: 'ptmt-support-footer' }, 'Feedback/support');
     const linksWrapper = el('div', { className: 'ptmt-support-links' });
     const discordLink = el('a', { href: 'https://discord.gg/2tJcWeMjFQ', target: '_blank', rel: 'noopener noreferrer', className: 'ptmt-support-link' }, 'Discord (IceFog\'s AI Brew Bar)');
-    const patreonLink = el('a', { href: 'https://www.patreon.com/cw/IceFog72', target: '_blank', rel: 'noopener noreferrer', className: 'ptmt-support-link' }, 'No scam Patreon');
+    const patreonLink = el('span', { className: 'ptmt-support-link' }, 'No more Patreon because they scam.');
 
     // GitHub Star Badge (Shields.io) - Reliable & no script needed
     const githubLink = el('a', {
