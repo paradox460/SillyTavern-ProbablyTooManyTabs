@@ -37,6 +37,7 @@ body.ptmt-auto-contrast {
     text-shadow: var(--ptmt-adaptive-shadow) !important;
 }
 
+.ptmt-auto-contrast .options-content a,
 .ptmt-auto-contrast .drawer-content,
 .ptmt-auto-contrast .draggable,
 .ptmt-auto-contrast .list-group,
