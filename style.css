@@ -4343,10 +4343,6 @@ body:not(.ptmt-enable-blur-effect) *::after {
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    box-shadow 150ms ease;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--SmartThemeBodyColor, #d8d8d8) 30%, transparent) transparent;
 }
@@ -4385,7 +4381,6 @@ body:not(.ptmt-enable-blur-effect) *::after {
   justify-content: flex-end;
   gap: 12px;
   opacity: 1;
-  transition: background-color 150ms ease;
 }
 
 #gpt-message-rail .gmr-dot::after {
@@ -4395,7 +4390,6 @@ body:not(.ptmt-enable-blur-effect) *::after {
   height: 2px;
   background: color-mix(in srgb, var(--SmartThemeBodyColor, #d8d8d8) 48%, transparent);
   border-radius: 999px;
-  transition: all 150ms ease;
   flex-shrink: 0;
 }
 
@@ -4433,8 +4427,34 @@ body:not(.ptmt-enable-blur-effect) *::after {
   text-align: right;
 }
 
-.mes.gmr-pulse {
+body.ptmt-enable-animations .mes.gmr-pulse {
   animation: gmr-message-pulse 900ms ease;
+}
+
+/* Gated transitions for GPT Message Rail when animations are enabled */
+body.ptmt-enable-animations #gpt-message-rail .gmr-dots {
+  transition:
+    width 150ms ease,
+    padding 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+body.ptmt-enable-animations #gpt-message-rail .gmr-dot {
+  transition:
+    width 150ms ease,
+    height 150ms ease,
+    padding 150ms ease,
+    background-color 150ms ease;
+}
+
+body.ptmt-enable-animations #gpt-message-rail .gmr-dot::after {
+  transition: all 150ms ease;
+}
+
+body.ptmt-enable-animations #gpt-message-rail .gmr-dot::before {
+  transition: opacity 150ms ease;
 }
 
 @keyframes gmr-message-pulse {
@@ -4454,8 +4474,8 @@ body:not(.ptmt-enable-blur-effect) *::after {
 /* Expanding Panel on Hover */
 #gpt-message-rail:hover .gmr-dots {
   width: 320px;
-  background: color-mix(in srgb, var(--SmartThemeBlurTintColor, #111) 86%, transparent);
-  border-color: color-mix(in srgb, var(--SmartThemeBorderColor, #666) 70%, transparent);
+  background-color: rgb(from var(--SmartThemeBlurTintColor) r g b / clamp(0, calc(alpha + 0.3), 1));
+  border-color: var(--SmartThemeBorderColor, #444);
   padding: 12px;
   backdrop-filter: blur(8px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);

@@ -25,7 +25,7 @@ import { moveTabTransaction } from './layout-transactions.js';
 import { removeMouseDownDrawerHandler, openAllDrawersJq, moveToMovingDivs, overrideDelegatedEventHandler, initDrawerObserver, moveBg1ToSheld } from './misc-helpers.js';
 import { initDemotionObserver, updatePendingTabColumn } from './pending-tabs.js';
 import { positionAnchor } from './positionAnchor.js';
-import { initStatusBar, initWorldInfoStatusBar } from './context-status-bar.js';
+import { initStatusBar, initWorldInfoStatusBar, cleanupConsoleOverrides } from './context-status-bar.js';
 import { themeEngine } from './theme-engine.js';
 import { initColorizer } from './dialogue-colorizer.js';
 import { initCharacterColorizerUI } from './character-colorizer-ui.js';
@@ -708,6 +708,7 @@ export async function onDisable() {
     console.log('[PTMT] Extension disabled');
     cleanupInspectorScaleControl();
     cleanupAllObservers();
+    cleanupConsoleOverrides();
 }
 
 export async function onUpdate() {
