@@ -107,7 +107,7 @@ SillyTavern-ProbablyTooManyTabs/
 ## Support Development
 
 
-No more Patreon because they scam.
+Support my projects: [💸 PayPal](https://www.paypal.com/ncp/payment/ABWFG6Y3SRGE6)
 
 ---
 
