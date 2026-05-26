@@ -1119,6 +1119,7 @@ body.ptmt-enable-animations .drawer-toggle:hover {
     align-items: flex-start;
 }
 
+#AdvancedFormatting>.flex-container.spaceEvenly>div,
 #user-settings-block-content>div {
     min-width: min(320px, 100%);
     gap: 4px !important;
@@ -1681,9 +1682,6 @@ body.ptmt-enable-animations .stih--button {
 }
 
 #AdvancedFormatting>.flex-container.spaceEvenly {
-    min-width: 860px;
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(280px, 1fr));
     gap: 8px !important;
     align-items: start;
 }
@@ -1691,7 +1689,6 @@ body.ptmt-enable-animations .stih--button {
 #AdvancedFormatting #ContextSettings,
 #AdvancedFormatting #InstructSettingsColumn,
 #AdvancedFormatting #SystemPromptColumn {
-    min-width: 0;
     gap: 4px !important;
     padding: 5px;
     background: var(--ST-UI-Background-2);
