@@ -107,6 +107,10 @@ export class LayoutManager {
             window.removeEventListener(EVENTS.LAYOUT_CHANGED, this._layoutChangeHandler);
             this._layoutChangeHandler = null;
         }
+        if (this._settingsCheckboxSyncHandler) {
+            window.removeEventListener(EVENTS.SETTINGS_CHANGED, this._settingsCheckboxSyncHandler);
+            this._settingsCheckboxSyncHandler = null;
+        }
         if (this._openSettingsHandler) {
             window.removeEventListener(EVENTS.OPEN_TAB_SETTINGS, this._openSettingsHandler);
             this._openSettingsHandler = null;

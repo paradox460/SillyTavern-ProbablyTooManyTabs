@@ -3,11 +3,13 @@ import { EVENTS } from '../constants.js';
 import { SettingsManager } from '../settings.js';
 import { moveBg1ToSheld, moveBg1BackToPtmtMain } from '../misc-helpers.js';
 import { GradientEditor } from '../gradient-editor.js';
+import { applyColumnVisibility } from '../layout.js';
 
 export function createSettingsPanel(manager) {
     const { settings, appApi } = manager;
     const panel = el('div', { className: 'ptmt-settings-panel' });
     manager.rootElement = panel;
+    const settingCheckboxes = new Map();
 
     const topSection = el('div', { className: 'ptmt-settings-top-section' });
     const globalSettings = el('fieldset', { className: 'ptmt-settings-fieldset' }, el('legend', {}, 'Global Layout'));
@@ -44,9 +46,14 @@ export function createSettingsPanel(manager) {
             }
 
             settings.update({ [settingKey]: e.target.checked });
+            if (settingKey === 'showLeftPane' || settingKey === 'showRightPane') {
+                applyColumnVisibility();
+                window.dispatchEvent(new CustomEvent(EVENTS.LAYOUT_CHANGED, { detail: { reason: 'columnVisibilityChanged' } }));
+            }
         });
 
         wrapper.append(checkbox, label);
+        settingCheckboxes.set(settingKey, checkbox);
         return wrapper;
     };
 
@@ -459,6 +466,18 @@ export function createSettingsPanel(manager) {
     }
     manager._layoutChangeHandler = () => manager.renderUnifiedEditor();
     window.addEventListener(EVENTS.LAYOUT_CHANGED, manager._layoutChangeHandler);
+
+    if (manager._settingsCheckboxSyncHandler) {
+        window.removeEventListener(EVENTS.SETTINGS_CHANGED, manager._settingsCheckboxSyncHandler);
+    }
+    manager._settingsCheckboxSyncHandler = (event) => {
+        const changed = event.detail?.changed || [];
+        changed.forEach(key => {
+            const checkbox = settingCheckboxes.get(key);
+            if (checkbox) checkbox.checked = !!settings.get(key);
+        });
+    };
+    window.addEventListener(EVENTS.SETTINGS_CHANGED, manager._settingsCheckboxSyncHandler);
 
     return panel;
 }
