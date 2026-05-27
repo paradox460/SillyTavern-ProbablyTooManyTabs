@@ -1,5 +1,11 @@
 # Changelog
 
+
+## v0.12.8 — 2026-05-28
+
+- ✔ Fix · **Guide — Hide Tab** — the Right-Click Context Menu section of the Guide now documents the **Hide Tab** option (removes tab to Hidden Tabs storage; drag back from Layout Editor to restore).
+- ✔ Fix · **Layout Settings Column Toggles** — **Show Left Column** and **Show Right Column** now apply column visibility immediately and stay synced when layouts or side-column cleanup update visibility in the background.
+
 ---
 
 ## v0.12.6 — 2026-05-21
@@ -9,8 +15,6 @@
 - ✦ Refactor · **Centralized Colorizer Settings** — extracted all schema validation, defaults, key building, and persistence for character and persona custom colorizer settings into a dedicated `colorizer-settings.js` module. `character-colorizer-ui.js`, `dialogue-colorizer.js`, and `settings.js` now delegate to this single source of truth.
 - ✦ Refactor · **Schema-Validated Writes** — `updateCustomColorizerSettings` validates and coerces every field through `buildColorizerCustomEntry` before persisting, eliminating silent data corruption from stale or malformed entries.
 - ✦ Refactor · **Unified Key Builders** — `buildCharacterCustomColorizerKey`, `buildCustomColorizerKey`, and `resolveCustomColorizerSettings` provide a consistent API for looking up character and persona overrides across all call sites.
-- ✔ Fix · **Guide — Hide Tab** — the Right-Click Context Menu section of the Guide now documents the **Hide Tab** option (removes tab to Hidden Tabs storage; drag back from Layout Editor to restore).
-- ✔ Fix · **Layout Settings Column Toggles** — **Show Left Column** and **Show Right Column** now apply column visibility immediately and stay synced when layouts or side-column cleanup update visibility in the background.
 
 ---
 
