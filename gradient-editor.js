@@ -60,13 +60,13 @@ function shouldFlipStopAxis(angle) {
 export class GradientEditor {
     constructor({
         stops = [],
-        onChange = () => {},
+        onChange = () => { },
         angle = 225,
         showAngle = true,
         showReset = false,
         showPalette = true,
         showTrack = true,
-        onReset = () => {},
+        onReset = () => { },
         colors = [],
     } = {}) {
         this._id = `ptmt-ge-${++editorIdCounter}`;
@@ -187,6 +187,8 @@ export class GradientEditor {
         const controls = el('div', { className: 'ptmt-ge-controls' });
 
         if (this._showAngle) {
+
+            this._angleValue = el('span', { className: 'ptmt-ge-angle-value' }, `${this._angle}deg`);
             this._angleInput = el('input', {
                 type: 'range',
                 min: '0',
@@ -196,7 +198,6 @@ export class GradientEditor {
                 className: 'ptmt-ge-angle-slider',
                 title: 'Gradient angle',
             });
-            this._angleValue = el('span', { className: 'ptmt-ge-angle-value' }, `${this._angle}deg`);
             this._angleInput.addEventListener('input', () => {
                 this._angle = normalizeAngle(this._angleInput.value);
                 this._angleValue.textContent = `${this._angle}deg`;
@@ -205,7 +206,7 @@ export class GradientEditor {
                 this._emitChange();
             });
 
-            controls.append(this._angleInput, this._angleValue);
+            controls.append(this._angleValue, this._angleInput);
         }
 
         if (this._showReset && !this._showPalette) {

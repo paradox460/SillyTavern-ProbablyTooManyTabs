@@ -4,6 +4,16 @@ Install any of these from the SillyTavern Extension Manager (third-party tab).
 
 ---
 
+## SillyTavern-Inline-Assistant
+
+Brings inline autocomplete suggestions, real-time translation preview, and visual input history navigation directly into your SillyTavern message editor.
+
+**Tags:** AI · Autocomplete · Translation · UI · QoL
+
+[→ View on GitHub](https://github.com/IceFog72/SillyTavern-Inline-Assistant)
+
+---
+
 ## SillyTavern-MoreReasoning
 
 Advanced reasoning controls for AI models that support extended thinking. Configure reasoning budgets, toggle thinking per-request, and inspect the model's reasoning process in a dedicated panel.

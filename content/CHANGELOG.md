@@ -5,7 +5,8 @@
 
 - ✔ Fix · **Guide — Hide Tab** — the Right-Click Context Menu section of the Guide now documents the **Hide Tab** option (removes tab to Hidden Tabs storage; drag back from Layout Editor to restore).
 - ✔ Fix · **Layout Settings Column Toggles** — **Show Left Column** and **Show Right Column** now apply column visibility immediately and stay synced when layouts or side-column cleanup update visibility in the background.
-
+                                                                                                                                                                                                                                                                    lets simulate a situation, you edited file and you know we  
+done with it, you no longer need it in context. insted of waiting context window bet 
 ---
 
 ## v0.12.6 — 2026-05-21

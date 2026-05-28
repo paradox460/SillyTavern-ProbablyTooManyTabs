@@ -3248,7 +3248,6 @@ body.ptmt-enable-animations .ptmt-split-preview {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 8px 0;
   width: 100%;
 }
 
@@ -3256,7 +3255,6 @@ body.ptmt-enable-animations .ptmt-split-preview {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
 }
 
 .ptmt-ge-palette {
@@ -3382,7 +3380,6 @@ body.ptmt-enable-animations .ptmt-split-preview {
 }
 
 .ptmt-ge-controls {
-  display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
