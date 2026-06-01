@@ -416,7 +416,7 @@ body.ptmt-Theme-RoundedSmooth .drawer-content {
 .drawer-content {
   min-width: 200px !important;
   border: none !important;
-  padding: 12px !important;
+  padding: 6px !important;
 }
 
 #extensionTopBar,

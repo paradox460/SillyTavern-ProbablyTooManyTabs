@@ -44,7 +44,7 @@ body.ptmt-auto-contrast {
 .ptmt-auto-contrast .list-group-item,
 .ptmt-auto-contrast .tag,
 .ptmt-auto-contrast .info-block,
-.ptmt-auto-contrast label {
+.ptmt-auto-contrast label:not(:has(.toggleOn)) {
     color: var(--ptmt-adaptive-text) !important;
     text-shadow: var(--ptmt-adaptive-shadow) !important;
 }
@@ -796,15 +796,20 @@ textarea:disabled {
     filter: unset !important;
     text-shadow: unset !important;
     font-size: calc(var(--mainFontSize) * 0.9);
-    color: var(--ST-Main-Text, #d7dde7) !important;
-    background: var(--ST-TextBox-Background, rgba(0, 0, 0, 0.3)) !important;
     border: 1px solid var(--ST-UI-Border, #263246) !important;
     border-radius: var(--ptmt-control-radius) !important;
     box-shadow: var(--ptmt-control-button-shadow) !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
 
+.menu_button:not(#delete_button) {
+    background: var(--ST-TextBox-Background, rgba(0, 0, 0, 0.3)) !important;
+}
+
+.menu_button:not(.world_set):not(.toggleEnabled):not(.togglable):not(.toggleOn):not(.bulk_edit_overlay_active):not(label[for="bind_preset_to_connection"]:has(input:checked)) {
+    color: var(--ST-Main-Text, #d7dde7) !important;
 }
 
 body.ptmt-enable-animations .menu_button {
@@ -1787,12 +1792,15 @@ body.ptmt-enable-animations #AdvancedFormatting input[type="number"] {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: var(--ST-Main-Text, #d7dde7) !important;
     background: var(--ST-TextBox-Background, rgba(0, 0, 0, 0.3)) !important;
     border: 1px solid transparent !important;
     border-radius: var(--ptmt-control-radius) !important;
     box-shadow: var(--ptmt-control-button-shadow) !important;
     filter: none !important;
+}
+
+#AdvancedFormatting .menu_button:not(.world_set):not(.toggleEnabled):not(.togglable):not(.toggleOn):not(.bulk_edit_overlay_active):not(label[for="bind_preset_to_connection"]:has(input:checked)) {
+    color: var(--ST-Main-Text, #d7dde7) !important;
 }
 
 body.ptmt-enable-animations #AdvancedFormatting .menu_button {
