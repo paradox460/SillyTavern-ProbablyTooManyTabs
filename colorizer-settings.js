@@ -122,7 +122,7 @@ export async function updateCustomColorizerSettings(settingsStore, type, key, op
     if (options.enabled === false) {
         if (currentlyEnabled) enabledList.splice(enabledList.indexOf(key), 1);
         delete settingsMap[key];
-        await settingsStore.update({ [keys.enabled]: enabledList, [keys.settings]: settingsMap });
+        await settingsStore.update({ [keys.enabled]: enabledList, [keys.settings]: settingsMap }, true);
         return true;
     }
 
@@ -132,7 +132,7 @@ export async function updateCustomColorizerSettings(settingsStore, type, key, op
     if (options.enabled === true && !currentlyEnabled) enabledList.push(key);
     settingsMap[key] = nextEntry;
 
-    await settingsStore.update({ [keys.enabled]: enabledList, [keys.settings]: settingsMap });
+    await settingsStore.update({ [keys.enabled]: enabledList, [keys.settings]: settingsMap }, true);
     return true;
 }
 

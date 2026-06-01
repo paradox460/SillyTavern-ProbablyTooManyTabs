@@ -322,39 +322,6 @@ export function initWorldInfoStatusBar() {
     // Listen for World Info activation events
     eventSource.on(event_types.WORLD_INFO_ACTIVATED, handleWorldInfoActivated);
 
-    // Fallback: Listen to console for "0 entries found" cases (SillyTavern doesn't emit event for empty state)
-    if (console.debug && !console.debug.__ptmt_original) {
-        const originalDebug = console.debug;
-        console.debug = function(...args) {
-            const zeroEntryTriggers = [
-                '[WI] Found 0 world lore entries. Sorted by strategy',
-                '[WI] Adding 0 entries to prompt',
-            ];
-            if (zeroEntryTriggers.includes(args[0])) {
-                currentWorldInfoEntries = [];
-                renderWorldInfoStatusBar();
-            }
-            return originalDebug.apply(console, args);
-        };
-        console.debug.__ptmt_original = originalDebug;
-    }
-
-    if (console.log && !console.log.__ptmt_original) {
-        const originalLog = console.log;
-        console.log = function(...args) {
-            const zeroEntryTriggers = [
-                '[WI] Found 0 world lore entries. Sorted by strategy',
-                '[WI] Adding 0 entries to prompt',
-            ];
-            if (zeroEntryTriggers.includes(args[0])) {
-                currentWorldInfoEntries = [];
-                renderWorldInfoStatusBar();
-            }
-            return originalLog.apply(console, args);
-        };
-        console.log.__ptmt_original = originalLog;
-    }
-
     // Clear on chat change
     eventSource.on(event_types.CHAT_CHANGED, handleWorldInfoChatChanged);
 
@@ -365,17 +332,7 @@ export function initWorldInfoStatusBar() {
     renderWorldInfoStatusBar();
 }
 
-export function cleanupConsoleOverrides() {
-    // Restore original console overrides
-    if (console.debug && console.debug.__ptmt_original) {
-        console.debug = console.debug.__ptmt_original;
-        delete console.debug.__ptmt_original;
-    }
-    if (console.log && console.log.__ptmt_original) {
-        console.log = console.log.__ptmt_original;
-        delete console.log.__ptmt_original;
-    }
-
+export function cleanupStatusBars() {
     // Deregister eventSource listeners
     try {
         eventSource.off(event_types.MESSAGE_RECEIVED, updateStatusBar);
