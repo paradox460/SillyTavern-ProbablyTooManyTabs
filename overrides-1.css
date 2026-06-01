@@ -19,6 +19,10 @@
     --tool-cool-color-picker-btn-border-radius-inner: 4px;
 }
 
+body * {
+    text-shadow: 0.5px 0.5px calc(var(--shadowWidth) * 1px) var(--SmartThemeShadowColor);
+}
+
 /* ========================================= */
 /* 1. AUTO-CONTRAST TEXT COLORS               */
 /* ========================================= */

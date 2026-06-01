@@ -212,6 +212,7 @@ body.ptmt-Theme-RoundedSmooth {
   --ptmt-tab-inner-size: calc(var(--ptmt-collapsed-width) - (2 * var(--ptmt-grid-gap)));
 }
 
+
 /* Soft & Smooth: fully-rounded tabs */
 body.ptmt-Theme-RoundedSoft,
 body.ptmt-Theme-RoundedSmooth {
