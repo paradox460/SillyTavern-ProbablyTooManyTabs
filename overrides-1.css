@@ -812,7 +812,7 @@ textarea:disabled {
     background: var(--ST-TextBox-Background, rgba(0, 0, 0, 0.3)) !important;
 }
 
-.menu_button:not(.world_set):not(.toggleEnabled):not(.togglable):not(.toggleOn):not(.bulk_edit_overlay_active):not(label[for="bind_preset_to_connection"]:has(input:checked)) {
+.menu_button:not(.world_set):not(.toggleEnabled):not(.togglable):not(.toggleOn):not(.fav_on):not(.bulk_edit_overlay_active):not(label[for="bind_preset_to_connection"]:has(input:checked)) {
     color: var(--ST-Main-Text, #d7dde7) !important;
 }
 
