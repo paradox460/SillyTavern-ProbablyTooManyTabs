@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v0.12.11 — 2026-06-16
+
+*Per-Persona Colorizer Persistence*
+
+- ✔ Fix · **Enable Toggle Persisting** — *Enable Personal Dialogue Colorizer* now saves reliably and stays on across reloads. The active persona is read from SillyTavern's live `user_avatar` binding instead of the persona grid tile, which could be missing when the list is paginated or in list view (silently aborting the save).
+- ✔ Fix · **Selected-Persona Targeting** — corrected the grid selector to `.avatar-container.selected` (ST marks the container, not the inner `.avatar`), so the correct persona is read when a grid tile is used as fallback.
+- ✔ Fix · **State Restored on Startup** — the persona colorizer panel now repopulates its saved state on init and `APP_READY`, not only on `PERSONA_CHANGED` (which can fire before the UI is ready and leave the toggle visually off).
+
+---
+
 ## v0.12.10 — 2026-06-16
 
 *Dialogue Colorizer Fixes*

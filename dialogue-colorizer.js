@@ -4,7 +4,7 @@
  * Optimized for PTMT with stable UIDs and robust extraction.
  */
 
-import { eventSource, event_types } from '../../../../script.js';
+import { eventSource, event_types, user_avatar } from '../../../../script.js';
 import { getContext } from '../../../extensions.js';
 import { power_user } from '../../../power-user.js';
 import { settings } from './settings.js';
@@ -469,16 +469,22 @@ async function updateStyles() {
         }
     });
 
-    // 2. Also ensure we have the current persona from the UI if not in chat
-    const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
-    if (userAvatarImg) {
-        const src = userAvatarImg.getAttribute('src');
-        if (src) {
-            const cleanFileName = extractAvatarFilenameFromUrl(src, 'user.png');
-            const uid = `user:${cleanFileName}`;
-            if (!uidsInDom.has(uid)) {
-                uidsInDom.set(uid, { type: 'persona', uid, avatarFileName: cleanFileName, domAvatarUrl: src, domImgElement: userAvatarImg });
-            }
+    // 2. Also ensure we have the current persona from the UI if not in chat.
+    //    Use ST's live `user_avatar` binding for the filename (pagination/view
+    //    independent); the selected grid <img>, if present, supplies pixels.
+    const cleanFileName = user_avatar || extractAvatarFilenameFromUrl(
+        document.querySelector('#user_avatar_block .avatar-container.selected img')?.getAttribute('src') || '', '');
+    if (cleanFileName) {
+        const userAvatarImg = document.querySelector('#user_avatar_block .avatar-container.selected img');
+        const uid = `user:${cleanFileName}`;
+        if (!uidsInDom.has(uid)) {
+            uidsInDom.set(uid, {
+                type: 'persona',
+                uid,
+                avatarFileName: cleanFileName,
+                domAvatarUrl: userAvatarImg?.getAttribute('src') || '',
+                domImgElement: userAvatarImg,
+            });
         }
     }
 

@@ -5,7 +5,7 @@
  * using the inline-drawer SillyTavern structure and toolcool-color-picker.
  */
 
-import { eventSource, event_types } from '../../../../script.js';
+import { eventSource, event_types, user_avatar } from '../../../../script.js';
 import { getContext } from '../../../extensions.js';
 import { settings } from './settings.js';
 import { el, trackObserver, debounce, extractColorsFromImage, sortColorsByLightness } from './utils.js';
@@ -18,6 +18,17 @@ import {
 } from './colorizer-settings.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Active persona avatar filename. Sourced from ST's live `user_avatar` binding —
+ * reliable regardless of persona-list pagination or grid/list view. Falls back to
+ * the selected grid tile, then 'user.png'.
+ */
+function getActivePersonaFilename() {
+    if (user_avatar) return user_avatar;
+    const img = document.querySelector('#user_avatar_block .avatar-container.selected img');
+    return extractAvatarFilenameFromUrl(img?.getAttribute('src') || '', 'user.png');
+}
 
 function autoPopulateGradientFromAvatar(gradientEditor, imgElement, angle = 225) {
     if (!gradientEditor || !imgElement || !imgElement.complete || !imgElement.naturalWidth) return false;
@@ -215,7 +226,7 @@ function createPersonalColorizerUI(isPersona = false) {
         },
         onReset: () => {
             const img = isPersona
-                ? document.querySelector('#user_avatar_block .avatar.selected img')
+                ? document.querySelector('#user_avatar_block .avatar-container.selected img')
                 : document.getElementById('avatar_load_preview');
             if (img && autoPopulateGradientFromAvatar(gradientEditor, img, defaultGradientAngle)) {
             } else {
@@ -620,6 +631,12 @@ function initPersonaColorizer() {
         loadPersonaSettings();
     });
 
+    // Restore saved state on startup. PERSONA_CHANGED often fires before this
+    // listener is attached, so load directly now and again once the app is ready
+    // (by which point user_avatar is populated).
+    eventSource.on(event_types.APP_READY, () => loadPersonaSettings());
+    loadPersonaSettings();
+
     // Update UI when global dialogue colorizer enable state changes
     window.addEventListener('ptmt:settingsChanged', (e) => {
         const changed = e.detail?.changed || [];
@@ -640,14 +657,9 @@ function loadPersonaSettings() {
 
     isUpdatingPersonaSettings = true;
     try {
-        // Get current persona from DOM/API
-        const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
-        if (!userAvatarImg) return;
-
-        const src = userAvatarImg.getAttribute('src');
-        if (!src) return;
-
-        const cleanFileName = extractAvatarFilenameFromUrl(src, 'user.png');
+        // Get current persona from ST's live binding (pagination/view independent)
+        const cleanFileName = getActivePersonaFilename();
+        if (!cleanFileName) return;
 
         const resolved = resolveCustomColorizerSettings(settings, 'persona', cleanFileName);
         const isEnabled = resolved.enabled;
@@ -683,7 +695,7 @@ function loadPersonaSettings() {
             const gradientAngle = customSettings.bubbleGradientAngle ?? 125;
 
             // Always populate palette from avatar colors
-            const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
+            const userAvatarImg = document.querySelector('#user_avatar_block .avatar-container.selected img');
             if (userAvatarImg && userAvatarImg.complete && userAvatarImg.naturalWidth) {
                 const hexes = sortColorsByLightness(extractColorsFromImage(userAvatarImg));
                 if (hexes.length > 0) {
@@ -743,7 +755,7 @@ function updateBubbleColorSwatch(ui, mode, imgElement) {
 
 function getColorizerAvatarImage(isPersona) {
     return isPersona
-        ? document.querySelector('#user_avatar_block .avatar.selected img')
+        ? document.querySelector('#user_avatar_block .avatar-container.selected img')
         : document.getElementById('avatar_load_preview');
 }
 
@@ -778,11 +790,8 @@ async function updatePersonaSettings() {
 
     isUpdatingPersonaSettings = true;
     try {
-        const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
-        const src = userAvatarImg?.getAttribute('src');
-        if (!src) return;
-
-        const cleanFileName = extractAvatarFilenameFromUrl(src, 'user.png');
+        const cleanFileName = getActivePersonaFilename();
+        if (!cleanFileName) return;
         const isEnabled = personaColorizerUI.enableCheckbox.checked;
 
         if (!isEnabled) {
