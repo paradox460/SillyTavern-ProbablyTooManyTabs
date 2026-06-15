@@ -2,6 +2,7 @@ import {
     buildCharacterColorizerKey,
     buildCharacterColorizerKeyFromParts,
     buildPersonaColorizerKey,
+    extractIdentifierFromUid,
     normalizeHexColor,
 } from './colorizer-helpers.js';
 
@@ -81,6 +82,20 @@ export function buildCustomColorizerKey(type, uid, domAvatarUrl) {
     return getType(type) === 'persona'
         ? buildPersonaColorizerKey(uid, domAvatarUrl)
         : buildCharacterColorizerKey(uid, domAvatarUrl);
+}
+
+/**
+ * Build a custom-colorizer key from an already-resolved avatar filename.
+ * Prefer this over buildCustomColorizerKey when an info object is available:
+ * info.avatarFileName is stable (canonical char avatar / captured once), whereas
+ * a live DOM avatar URL can be empty while the <img> is still lazy-loading,
+ * which would derive a mismatched 'unknown.png'/'user.png' key.
+ */
+export function buildCustomColorizerKeyFromFilename(type, uid, avatarFileName) {
+    if (getType(type) === 'persona') {
+        return avatarFileName || extractIdentifierFromUid(uid) || 'user.png';
+    }
+    return buildCharacterColorizerKeyFromParts(extractIdentifierFromUid(uid), avatarFileName);
 }
 
 export function buildColorizerCustomEntry(type, patch = {}) {

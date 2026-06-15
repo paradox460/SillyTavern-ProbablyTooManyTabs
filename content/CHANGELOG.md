@@ -1,12 +1,20 @@
 # Changelog
 
 
+## v0.12.10 — 2026-06-16
+
+*Dialogue Colorizer Fixes*
+
+- ✔ Fix · **Per-Persona Colorizer** — Persona Management's *Enable Personal Dialogue Colorizer* now targets the **selected** persona instead of the first avatar in the grid, so saved overrides match the persona used in chat and actually apply.
+- ✔ Fix · **Scrollback Defaulting to Global** — custom character/persona colors no longer revert to the global colorizer when scrolling back through older messages. Override keys now derive from the stable avatar identity rather than a message's live avatar URL, which could be empty while the image lazy-loads.
+
+---
+
 ## v0.12.8 — 2026-05-28
 
 - ✔ Fix · **Guide — Hide Tab** — the Right-Click Context Menu section of the Guide now documents the **Hide Tab** option (removes tab to Hidden Tabs storage; drag back from Layout Editor to restore).
 - ✔ Fix · **Layout Settings Column Toggles** — **Show Left Column** and **Show Right Column** now apply column visibility immediately and stay synced when layouts or side-column cleanup update visibility in the background.
-                                                                                                                                                                                                                                                                    lets simulate a situation, you edited file and you know we  
-done with it, you no longer need it in context. insted of waiting context window bet 
+
 ---
 
 ## v0.12.6 — 2026-05-21

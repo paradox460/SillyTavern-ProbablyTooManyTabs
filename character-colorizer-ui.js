@@ -215,7 +215,7 @@ function createPersonalColorizerUI(isPersona = false) {
         },
         onReset: () => {
             const img = isPersona
-                ? document.querySelector('#user_avatar_block .avatar img')
+                ? document.querySelector('#user_avatar_block .avatar.selected img')
                 : document.getElementById('avatar_load_preview');
             if (img && autoPopulateGradientFromAvatar(gradientEditor, img, defaultGradientAngle)) {
             } else {
@@ -641,7 +641,7 @@ function loadPersonaSettings() {
     isUpdatingPersonaSettings = true;
     try {
         // Get current persona from DOM/API
-        const userAvatarImg = document.querySelector('#user_avatar_block .avatar img');
+        const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
         if (!userAvatarImg) return;
 
         const src = userAvatarImg.getAttribute('src');
@@ -683,7 +683,7 @@ function loadPersonaSettings() {
             const gradientAngle = customSettings.bubbleGradientAngle ?? 125;
 
             // Always populate palette from avatar colors
-            const userAvatarImg = document.querySelector('#user_avatar_block .avatar img');
+            const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
             if (userAvatarImg && userAvatarImg.complete && userAvatarImg.naturalWidth) {
                 const hexes = sortColorsByLightness(extractColorsFromImage(userAvatarImg));
                 if (hexes.length > 0) {
@@ -743,7 +743,7 @@ function updateBubbleColorSwatch(ui, mode, imgElement) {
 
 function getColorizerAvatarImage(isPersona) {
     return isPersona
-        ? document.querySelector('#user_avatar_block .avatar img')
+        ? document.querySelector('#user_avatar_block .avatar.selected img')
         : document.getElementById('avatar_load_preview');
 }
 
@@ -778,7 +778,7 @@ async function updatePersonaSettings() {
 
     isUpdatingPersonaSettings = true;
     try {
-        const userAvatarImg = document.querySelector('#user_avatar_block .avatar img');
+        const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
         const src = userAvatarImg?.getAttribute('src');
         if (!src) return;
 

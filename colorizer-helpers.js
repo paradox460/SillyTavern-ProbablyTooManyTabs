@@ -93,8 +93,12 @@ export function buildPersonaColorizerKey(uid, domAvatarUrl) {
 export function buildColorizerCacheKey(info) {
     if (!info) return 'unknown';
     if (info.type === 'system') return 'system';
-    if (info.type === 'persona') return `persona:${buildPersonaColorizerKey(info.uid, info.domAvatarUrl)}`;
-    return `character:${buildCharacterColorizerKey(info.uid, info.domAvatarUrl)}`;
+    // Key off the stable avatarFileName (canonical char avatar / captured filename)
+    // rather than the live DOM URL, which can be empty mid lazy-load.
+    if (info.type === 'persona') {
+        return `persona:${info.avatarFileName || buildPersonaColorizerKey(info.uid, info.domAvatarUrl)}`;
+    }
+    return `character:${buildCharacterColorizerKeyFromParts(extractIdentifierFromUid(info.uid), info.avatarFileName)}`;
 }
 
 export function normalizeBubbleMode(customSettings, fallback = 'gradient') {

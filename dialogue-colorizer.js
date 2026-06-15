@@ -19,7 +19,7 @@ import {
     rgbToHsl,
 } from './colorizer-helpers.js';
 import {
-    buildCustomColorizerKey,
+    buildCustomColorizerKeyFromFilename,
     resolveCustomColorizerSettings,
 } from './colorizer-settings.js';
 
@@ -106,7 +106,7 @@ function getColorizerControlSettings(type, info) {
         };
     }
 
-    const characterKey = buildCustomColorizerKey(type, info.uid, info.domAvatarUrl);
+    const characterKey = buildCustomColorizerKeyFromFilename(type, info.uid, info.avatarFileName);
     const resolved = resolveCustomColorizerSettings(settings, type, characterKey);
     if (resolved.enabled && resolved.raw) {
         const custom = resolved.value;
@@ -147,7 +147,7 @@ function getSettingsForType(type, info) {
 
     const isPersona = type === 'persona';
     
-    const characterKey = buildCustomColorizerKey(type, info.uid, info.domAvatarUrl);
+    const characterKey = buildCustomColorizerKeyFromFilename(type, info.uid, info.avatarFileName);
     const resolved = resolveCustomColorizerSettings(settings, type, characterKey);
     if (resolved.enabled && resolved.raw) {
         const custom = resolved.value;
@@ -254,7 +254,7 @@ async function getCharacterColor(info) {
 
 function getCustomColorizerSettings(info) {
     if (!info || info.type === 'system') return null;
-    const characterKey = buildCustomColorizerKey(info.type, info.uid, info.domAvatarUrl);
+    const characterKey = buildCustomColorizerKeyFromFilename(info.type, info.uid, info.avatarFileName);
     const resolved = resolveCustomColorizerSettings(settings, info.type, characterKey);
     if (resolved.enabled && resolved.raw) {
         return resolved.value;
@@ -470,7 +470,7 @@ async function updateStyles() {
     });
 
     // 2. Also ensure we have the current persona from the UI if not in chat
-    const userAvatarImg = document.querySelector('#user_avatar_block .avatar img');
+    const userAvatarImg = document.querySelector('#user_avatar_block .avatar.selected img');
     if (userAvatarImg) {
         const src = userAvatarImg.getAttribute('src');
         if (src) {
