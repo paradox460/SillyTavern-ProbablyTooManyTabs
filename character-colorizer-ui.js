@@ -863,7 +863,3 @@ export function initCharacterColorizerUI() {
         loadPersonaSettings();
     });
 }
-
-export function refreshColorizerStyles() {
-    window.dispatchEvent(new CustomEvent('ptmt:colorizer:refresh'));
-}

@@ -2,7 +2,7 @@
 
 import { el, isElement, getPanelBySourceId, getPanelById, getTabById, getRefs, createIconElement, hexToRgba } from './utils.js';
 import { setPaneCollapsedView, removePaneIfEmpty, checkAndCollapsePaneIfAllTabsCollapsed } from './pane.js';
-import { hideDropIndicator, hideSplitOverlay } from './drag-drop.js';
+import { hideCompass, hideDropIndicator } from './drag-drop.js';
 import { invalidatePaneTabSizeCache } from './resizer.js';
 import { runTabAction } from './tab-actions.js';
 import { settings } from './settings.js';
@@ -196,7 +196,7 @@ export function createTabElement(title, pid, icon = null, options = {}) {
   t.addEventListener('dragend', () => {
     t.classList.remove('dragging');
     hideDropIndicator();
-    hideSplitOverlay();
+    hideCompass();
   });
 
   t.addEventListener('contextmenu', (e) => {

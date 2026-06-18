@@ -63,15 +63,6 @@ export function initDrawerObserver() {
   console.log('[PTMT] Drawer state observer initialized.');
 }
 
-export function cleanupDrawerObserver() {
-  if (drawerUnregister) {
-    drawerUnregister();
-    drawerUnregister = null;
-    console.log('[PTMT] Drawer state observer cleaned up.');
-  }
-}
-
-
 export function openAllDrawersJq(context = document) {
   try {
     if (window.jQuery && jQuery) {
@@ -112,12 +103,6 @@ export function moveBg1BackToPtmtMain() {
     return true;
   }
   return false;
-}
-
-export function moveBgDivs(ids = ['bg_custom', 'bg1']) {
-  if (!document?.body) return [];
-  // Background div repositioning is currently disabled.
-  return [];
 }
 
 /**

@@ -600,9 +600,3 @@ export function initColorizer() {
         updateStyles();
     });
 }
-
-export function clearColorizerCache() {
-    colorCache.clear();
-    extractionPromises.clear();
-    updateStyles();
-}

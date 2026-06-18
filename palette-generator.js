@@ -1,4 +1,4 @@
-import { extractColorsFromImage, sortColorsByLightness } from './utils.js';
+import { clampColorChannel, contrastRatio, extractColorsFromImage, hexToRgb, mixRgb, rgba, rgbDistance, rgbObjectToHsl as rgbToHsl } from './utils.js';
 
 const TRANSLUCENT_PROFILE_SUFFIX = ' Alpha';
 const NORMAL_PROFILE_SUFFIX = ' Solid';
@@ -86,51 +86,6 @@ const BASE_PALETTE_PROFILES = {
 
 export const PALETTE_PROFILES = withProfileVariants(BASE_PALETTE_PROFILES);
 
-function hexToRgb(hex) {
-    const clean = hex.replace('#', '');
-    return {
-        r: parseInt(clean.slice(0, 2), 16),
-        g: parseInt(clean.slice(2, 4), 16),
-        b: parseInt(clean.slice(4, 6), 16),
-    };
-}
-
-function rgba({ r, g, b }, alpha = 1) {
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-function clampColorChannel(value) {
-    return Math.max(0, Math.min(255, Math.round(value)));
-}
-
-function mixRgb(color, mixWith, amount) {
-    return {
-        r: clampColorChannel(color.r + ((mixWith.r - color.r) * amount)),
-        g: clampColorChannel(color.g + ((mixWith.g - color.g) * amount)),
-        b: clampColorChannel(color.b + ((mixWith.b - color.b) * amount)),
-    };
-}
-
-function rgbDistance(a, b) {
-    const dr = a.r - b.r;
-    const dg = a.g - b.g;
-    const db = a.b - b.b;
-    return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
-}
-
-function relativeLuminance({ r, g, b }) {
-    const toLinear = value => {
-        value /= 255;
-        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-    };
-    return (0.2126 * toLinear(r)) + (0.7152 * toLinear(g)) + (0.0722 * toLinear(b));
-}
-
-function contrastRatio(a, b) {
-    const lighter = Math.max(relativeLuminance(a), relativeLuminance(b));
-    const darker = Math.min(relativeLuminance(a), relativeLuminance(b));
-    return (lighter + 0.05) / (darker + 0.05);
-}
 
 function ensureTextContrastToward(color, backgrounds, target = 'light', minRatio = 4.5) {
     const mixTarget = target === 'dark' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
@@ -140,37 +95,6 @@ function ensureTextContrastToward(color, backgrounds, target = 'light', minRatio
         if (passes) return candidate;
     }
     return mixRgb(color, mixTarget, 0.8);
-}
-
-function rgbToHsl({ r, g, b }) {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0;
-    let s = 0;
-    const l = (max + min) / 2;
-
-    if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-            case r:
-                h = (g - b) / d + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = (b - r) / d + 2;
-                break;
-            default:
-                h = (r - g) / d + 4;
-                break;
-        }
-        h *= 60;
-    }
-
-    return { h, s, l };
 }
 
 function colorStats(hex) {

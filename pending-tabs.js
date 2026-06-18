@@ -29,7 +29,6 @@ export function updatePendingTabColumn(tabInfo, newColumn) {
         console.log(`[PTMT-Pending] Armed listener for ${identifier} in column '${newColumn}' and pane '${tabInfo.paneId}'.`);
     }
 }
-
 function addTabToPendingList(tabInfo) {
     const identifier = getTabIdentifier(tabInfo);
     if (identifier && !pendingTabsMap.has(identifier)) {
@@ -284,16 +283,4 @@ export function initDemotionObserver(api) {
     };
     demotionObserver = trackObserver(new MutationObserver(callback));
     demotionObserver.observe(target, { childList: true, subtree: true });
-}
-
-export function cleanupPendingTabsObservers() {
-    if (hydrationObserver) {
-        hydrationObserver.disconnect();
-        hydrationObserver = null;
-    }
-    if (demotionObserver) {
-        demotionObserver.disconnect();
-        demotionObserver = null;
-    }
-    pendingTabsMap.clear();
 }

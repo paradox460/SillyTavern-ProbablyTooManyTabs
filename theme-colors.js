@@ -1,38 +1,10 @@
 import { getRequestHeaders, saveSettingsDebounced } from '../../../../script.js';
 import { power_user } from '../../../power-user.js';
-import { sortColorsByLightness } from './utils.js';
+import { clampColorChannel, contrastRatio, hexToRgb, mixRgb, rgba, rgbDistance, rgbObjectToHsl as rgbToHsl, sortColorsByLightness } from './utils.js';
 import { PALETTE_PROFILES as SHARED_PALETTE_PROFILES, buildThemeFromImage as buildSharedThemeFromImage } from './palette-generator.js';
 
 const PTMT_THEME_COLOR_KEY = 'ptmt_theme_colors';
 const PALETTE_PROFILE_KEY = 'ptmt_bg_palette_profile';
-
-// ─── Dead code: local profile copies superseded by palette-generator.js ───────
-// These profiles have diverged alpha values (0.86–0.94 vs 0.3–0.6 in the live
-// palette-generator.js version). Kept for reference.
-//
-// const TRANSLUCENT_PROFILE_SUFFIX = ' Alpha';
-// const NORMAL_PROFILE_SUFFIX = ' Solid';
-//
-// function withNormalPaletteProfile(profile) {
-//     return { ...profile, uiAlpha: 1 };
-// }
-//
-// function withPaletteProfileVariants(profiles) {
-//     return Object.fromEntries(Object.entries(profiles).flatMap(([key, profile]) => [
-//         [key, { ...profile, label: `${profile.label}${TRANSLUCENT_PROFILE_SUFFIX}` }],
-//         [`${key}-normal`, { ...withNormalPaletteProfile(profile), label: `${profile.label}${NORMAL_PROFILE_SUFFIX}` }],
-//     ]));
-// }
-//
-// const BASE_PALETTE_PROFILES = {
-//     dark:     { panelAlpha: 0.88, uiAlpha: 0.9,  inputAlpha: 0.82, ... },
-//     bright:   { panelAlpha: 0.92, uiAlpha: 0.94, inputAlpha: 0.9,  ... },
-//     balanced: { panelAlpha: 0.9,  uiAlpha: 0.9,  inputAlpha: 0.84, ... },
-//     vivid:    { panelAlpha: 0.86, uiAlpha: 0.88, inputAlpha: 0.8,  ... },
-//     soft:     { panelAlpha: 0.88, uiAlpha: 0.9,  inputAlpha: 0.84, ... },
-// };
-//
-// const PALETTE_PROFILES = withPaletteProfileVariants(BASE_PALETTE_PROFILES);
 
 const PTMT_THEME_COLORS = [
     {
@@ -96,51 +68,6 @@ function getExplicitThemeColor({ powerUserKey }) {
     return typeof value === 'string' && value.trim() ? value.trim() : '';
 }
 
-function hexToRgb(hex) {
-    const clean = hex.replace('#', '');
-    return {
-        r: parseInt(clean.slice(0, 2), 16),
-        g: parseInt(clean.slice(2, 4), 16),
-        b: parseInt(clean.slice(4, 6), 16),
-    };
-}
-
-function rgba({ r, g, b }, alpha = 1) {
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-function clampColorChannel(value) {
-    return Math.max(0, Math.min(255, Math.round(value)));
-}
-
-function mixRgb(color, mixWith, amount) {
-    return {
-        r: clampColorChannel(color.r + ((mixWith.r - color.r) * amount)),
-        g: clampColorChannel(color.g + ((mixWith.g - color.g) * amount)),
-        b: clampColorChannel(color.b + ((mixWith.b - color.b) * amount)),
-    };
-}
-
-function rgbDistance(a, b) {
-    const dr = a.r - b.r;
-    const dg = a.g - b.g;
-    const db = a.b - b.b;
-    return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
-}
-
-function relativeLuminance({ r, g, b }) {
-    const toLinear = value => {
-        value /= 255;
-        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-    };
-    return (0.2126 * toLinear(r)) + (0.7152 * toLinear(g)) + (0.0722 * toLinear(b));
-}
-
-function contrastRatio(a, b) {
-    const lighter = Math.max(relativeLuminance(a), relativeLuminance(b));
-    const darker = Math.min(relativeLuminance(a), relativeLuminance(b));
-    return (lighter + 0.05) / (darker + 0.05);
-}
 
 function ensureTextContrastToward(color, backgrounds, target = 'light', minRatio = 4.5) {
     const mixTarget = target === 'dark' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
@@ -150,37 +77,6 @@ function ensureTextContrastToward(color, backgrounds, target = 'light', minRatio
         if (passes) return candidate;
     }
     return mixRgb(color, mixTarget, 0.8);
-}
-
-function rgbToHsl({ r, g, b }) {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0;
-    let s = 0;
-    const l = (max + min) / 2;
-
-    if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-            case r:
-                h = (g - b) / d + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = (b - r) / d + 2;
-                break;
-            default:
-                h = (r - g) / d + 4;
-                break;
-        }
-        h *= 60;
-    }
-
-    return { h, s, l };
 }
 
 function isMuddyUiColor(color) {
@@ -203,11 +99,6 @@ function pleasantUiRgb(color) {
     const amount = color.saturation > 0.32 ? 0.62 : 0.48;
     return mixRgb(color.rgb, coolByTone, amount);
 }
-
-// Dead: was only used by the local buildThemeFromColors below.
-// function getPaletteProfile(profileName) {
-//     return PALETTE_PROFILES[profileName] || PALETTE_PROFILES.dark;
-// }
 
 function getSelectedPaletteProfile() {
     const saved = power_user[PALETTE_PROFILE_KEY];
@@ -534,11 +425,6 @@ async function loadBackgroundImage() {
     await img.decode();
     return img;
 }
-
-// Dead: local buildThemeFromColors superseded by palette-generator.js.
-// The live path is: applyBackgroundPalette → buildSharedThemeFromImage → palette-generator.buildThemeFromColors
-// Note: this copy used inter-color mixing for 'light' panelTone whereas the live version uses white-mix params.
-// function buildThemeFromColors(hexes, profileName = getSelectedPaletteProfile()) { ... }
 
 async function applyImagePalette(button, loadImage, successMessage, warningPrefix) {
     if (button.dataset.busy === 'true') return;

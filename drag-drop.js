@@ -168,7 +168,7 @@ function showCompassOnPane(pane, canSplit) {
   compass.classList.toggle('ptmt-compass-no-split', !canSplit);
 }
 
-function hideCompass() {
+export function hideCompass() {
   if (compassEl) compassEl.style.display = 'none';
   compassCurrentPane = null;
   compassHoveredZone = null;
@@ -402,8 +402,6 @@ export const hideDropIndicator = () => {
   const refs = getRefs();
   refs.dropIndicator && (refs.dropIndicator.style.display = 'none');
 };
-
-export const hideSplitOverlay = hideCompass;  // backwards compat for tabs.js
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
