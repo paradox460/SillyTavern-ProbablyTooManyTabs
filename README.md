@@ -68,6 +68,7 @@ PTMT integrates with these SillyTavern extensions:
 - [SillyTavern-WorldInfoInfo](https://github.com/LenAnderson/SillyTavern-WorldInfoInfo) (World Info integration as status bar)
 - [SillyTavern-Tracker](https://github.com/kaldigo/SillyTavern-Tracker)
 - [SillyTavern-Variable-Viewer](https://github.com/LenAnderson/SillyTavern-Variable-Viewer)
+- [RPG Companion](https://github.com/SpicyMarinara/rpg-companion-sillytavern)
 
 > **Note**: For popup windows, press the extension's popup button to be added as tab
 
