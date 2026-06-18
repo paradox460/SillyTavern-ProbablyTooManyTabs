@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v0.12.12 — 2026-06-19
+
+*RPG Companion Integration*
+
+- ✦ New · **RPG Companion Tab** — added native support for the RPG Companion panel on desktop and mobile, including scoped layout overrides that keep its fixed-position UI contained inside a PTMT tab.
+- © Migration · **Existing Layout Support** — snapshot migration v28 automatically adds RPG Companion as a pending tab to existing desktop and mobile layouts; no layout reset is required.
+
+---
+
+
 ## v0.12.11 — 2026-06-16
 
 *Per-Persona Colorizer Persistence*

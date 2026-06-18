@@ -25,7 +25,7 @@ import { createInfoPanel, PTMT_INFO_PANEL_ID, getPTMTInfoCurrentVersion } from '
 /** @typedef {import('./types.js').HiddenTab} HiddenTab */
 
 const SNAPSHOT_VERSION = 15;      // Minimum supported version
-const SNAPSHOT_CURRENT_VERSION = 27; // Version written by generateLayoutSnapshot
+const SNAPSHOT_CURRENT_VERSION = 28; // Version written by generateLayoutSnapshot
 
 // ─── Snapshot Migration Registry ─────────────────────────────────────────────
 // Each key is a source version; the value migrates that version to (key + 1).
@@ -539,6 +539,12 @@ const SNAPSHOT_MIGRATIONS = {
         // v26→v27: Remove stale pending entries for tabs that are now normal default tabs.
         ensureAllDefaultTabsPresent(snap);
         snap.version = 27;
+        return snap;
+    },
+    27: (snap) => {
+        // v27→v28: Add newly supported extension tabs, including RPG Companion.
+        ensureAllDefaultTabsPresent(snap);
+        snap.version = 28;
         return snap;
     },
 };

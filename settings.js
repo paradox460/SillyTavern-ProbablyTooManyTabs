@@ -129,7 +129,8 @@ export class SettingsManager {
             { id: 'trackerInterface', title: 'Tracker', icon: 'fa-chart-simple' },
             { id: 'vv--root', title: 'Variables', icon: 'fa-code' },
             { id: 'etle--panel', title: 'Text Line Editor', icon: 'fa-pen-to-square' },
-            { id: 'cardGalleryViewer', title: 'Card Gallery', icon: 'fa-images' }
+            { id: 'cardGalleryViewer', title: 'Card Gallery', icon: 'fa-images' },
+            { id: 'rpg-companion-panel', title: 'RPG Companion', icon: 'fa-dice-d20' }
         ],
 
         presets: [],
@@ -137,7 +138,7 @@ export class SettingsManager {
         savedLayoutMobile: null,
 
         defaultLayout: {
-            version: 27,
+            version: 28,
             showIconsOnly: false,
             showLeft: true,
             showRight: true,
@@ -248,6 +249,7 @@ export class SettingsManager {
                     },
                     ghostTabs: [
                         { searchId: "objectiveExtensionPopout", searchClass: "", paneId: "ptmt-default-right-top-pane" },
+                        { searchId: "rpg-companion-panel", searchClass: "", paneId: "ptmt-default-right-top-pane" },
                         { searchId: "moonlit_echoes_popout", searchClass: "", paneId: "ptmt-default-right-top-pane" },
                         { searchId: "", searchClass: "zoomed_avatar", paneId: "ptmt-default-right-top-pane" }
                     ]
@@ -258,7 +260,7 @@ export class SettingsManager {
         uiTheme: 'sharp',
 
         mobileLayout: {
-            version: 27,
+            version: 28,
             showIconsOnly: true,
             showLeft: false,
             showRight: false,
@@ -318,7 +320,8 @@ export class SettingsManager {
                         { searchId: "moonlit_echoes_popout", searchClass: "", paneId: "ptmt-default-center-pane" },
                         { searchId: "", searchClass: "zoomed_avatar", paneId: "ptmt-default-center-pane" },
                         { searchId: "trackerInterface", searchClass: "", paneId: "ptmt-default-center-pane" },
-                        { searchId: "vv--root", searchClass: "", paneId: "ptmt-default-center-pane" }
+                        { searchId: "vv--root", searchClass: "", paneId: "ptmt-default-center-pane" },
+                        { searchId: "rpg-companion-panel", searchClass: "", paneId: "ptmt-default-center-pane" }
                     ]
                 }
             }

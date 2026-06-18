@@ -1487,6 +1487,27 @@ body.ptmt-Theme-Sharp .ptmt-pane-grid.grid-vertical.flow-reversed .ptmt-tabStrip
   align-content: stretch;
 }
 
+.ptmt-panel-content:has(> #rpg-companion-panel) {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.ptmt-panel-content > #rpg-companion-panel {
+  position: relative !important;
+  inset: auto !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  z-index: auto !important;
+  border: 0 !important;
+  transform: none !important;
+}
+
+.ptmt-panel-content > #rpg-companion-panel > .rpg-collapse-toggle {
+  display: none !important;
+}
+
 .ptmt-panel-content:has(> #charlib-embedded-container) {
   display: flex !important;
   flex-direction: column !important;
