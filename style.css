@@ -4516,3 +4516,16 @@ body.ptmt-enable-animations #gpt-message-rail .gmr-dot::before {
 #gpt-message-rail:hover .gmr-dot:hover {
   background: color-mix(in srgb, var(--SmartThemeBodyColor, #fff) 10%, transparent);
 }
+
+#expression-plus-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#injectManagerSideBar #injectManagerSideBarContainer {
+  width: 100%;
+}
+
+#groupMemberListPopout {
+  height: 100%
+}
