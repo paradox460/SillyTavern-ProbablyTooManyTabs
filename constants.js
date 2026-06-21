@@ -22,7 +22,7 @@ export const SELECTORS = {
     ST_DRAG_CLOSE: '.dragClose',
     ST_ZOOMED_AVATAR: '.zoomed_avatar',
     ST_ZOOMED_AVATAR_CONTAINER: '.zoomed_avatar_container',
-    ST_EXPRESSION_IMAGE: '#expression-image',
+    ST_EXPRESSION_IMAGE: '#expression-image, #expression-plus-image:not(.expression-plus-animating)',
 
     // PTMT Internal Structure
     MAIN: '#ptmt-main',
@@ -101,4 +101,3 @@ export const MESSAGES = {
     LAYOUT_SAVED: (mode) => `${mode} layout saved!`,
     LAYOUT_NOT_FOUND: (mode) => `No saved ${mode} layout found.`
 };
-
