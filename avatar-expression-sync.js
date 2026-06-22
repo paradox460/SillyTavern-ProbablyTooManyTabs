@@ -24,7 +24,7 @@ export function initAvatarExpressionSync() {
     const MAX_RETRIES = 15; // 30 seconds total at 2s intervals
 
     const startObserving = () => {
-        const expressionHolder = document.querySelector('#expression-holder');
+        const expressionHolder = document.querySelector('#expression-holder, #expression-plus-holder');
         if (!expressionHolder) {
             if (retryCount++ >= MAX_RETRIES) {
                 console.warn('[PTMT] Avatar-Expression Sync: #expression-holder not found after max retries. Giving up.');
@@ -39,12 +39,15 @@ export function initAvatarExpressionSync() {
             for (const mutation of mutations) {
                 // If the image element was replaced (SillyTavern's fade transition)
                 if (mutation.type === 'childList') {
-                    const addedNode = Array.from(mutation.addedNodes).find(node => node.id === 'expression-image' || (node.classList && node.classList.contains('expression')));
-                    if (addedNode) shouldUpdate = true;
+                  const addedNode = Array.from(mutation.addedNodes).find(node => node.matches("#expression-image, .expression"));
+                    // If an image element was removed, and its Expressions+ animation, we should consider this mutation as well, since now there's only one image displayed, the one we want
+                  const removedNode = Array.from(mutation.removedNodes).find(node => node.matches("#expression-plus-image, .expression-plus.expression-plus-animating"));
+                    if (addedNode || removedNode) shouldUpdate = true;
                 }
+
                 // If attributes on the image changed
                 if (mutation.type === 'attributes' && (mutation.attributeName === 'src' || mutation.attributeName === 'data-expression')) {
-                    if (mutation.target.id === 'expression-image' || mutation.target.classList.contains('expression')) {
+                    if (mutation.target.id === 'expression-image' || mutation.target.matches(".expression, .expression-plus")) {
                         shouldUpdate = true;
                     }
                 }
