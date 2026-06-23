@@ -1,4 +1,30 @@
 // tab-actions.js
+
+// Force RPG Companion to stay in its DESKTOP layout while hosted in a PTMT tab.
+// RPG decides mobile vs desktop solely from `window.innerWidth <= 1000`, read live
+// everywhere (no setting, no matchMedia). We can't edit RPG, so we clamp the only
+// signal it reads: report innerWidth as at least 1001 so its checks always say desktop.
+// No-op on windows already wider than the threshold; only narrow windows get clamped,
+// which is exactly where PTMT already forces desktop layout.
+// ponytail: global innerWidth clamp. If it disturbs other extensions/ST on narrow
+// viewports, scope RPG into its own iframe/shadow context instead.
+function forceRpgDesktop() {
+    if (window.__ptmtInnerWidthClamped) return;
+    const desc =
+        Object.getOwnPropertyDescriptor(window, 'innerWidth') ||
+        Object.getOwnPropertyDescriptor(Window.prototype, 'innerWidth');
+    const nativeGet = desc && desc.get;
+    const readReal = nativeGet
+        ? () => nativeGet.call(window)
+        : () => document.documentElement.clientWidth;
+    Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        get() { return Math.max(readReal(), 1001); }, // RPG: <=1000 => mobile
+    });
+    window.__ptmtInnerWidthClamped = true;
+    window.dispatchEvent(new Event('resize')); // nudge RPG if it already went mobile
+}
+
 // charlib-embedded-container start
 let _charLibListenerAttached = false;
 let _charLibEmbeddedVisible = false;
@@ -167,6 +193,18 @@ export const tabActions = {
         onSelect: (_panel) => { showCharLibEmbedded(); },
         onCollapse: (_panel) => { hideCharLibEmbedded(); },
         onOpen: (_panel) => { showCharLibEmbedded(); },
+    },
+    'rpg-companion-panel': {
+        // RPG Companion decides mobile vs desktop purely from window.innerWidth.
+        // Force it to stay desktop while hosted in a PTMT tab. Idempotent.
+        onInit: (_panel) => { forceRpgDesktop(); },
+        onSelect: (_panel) => { },
+        onCollapse: (_panel) => { },
+        onOpen: (_panel) => {
+            document.querySelector('.rpg-mobile-overlay')?.remove();
+            // Reveal the panel: RPG opens it via its mobile FAB toggle handler.
+            document.getElementById('rpg-mobile-toggle')?.click();
+        },
     },
 
 };

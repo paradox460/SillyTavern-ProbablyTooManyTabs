@@ -2178,3 +2178,24 @@ input[type="range"]::-moz-range-thumb:active {
 body .ui-widget-content {
     box-shadow: unset !important;
 }
+
+/* RPG Companion in a PTMT tab: defeat its mobile CSS (fires on real narrow viewport,
+   which the innerWidth clamp can't reach). Higher specificity + !important beats RPG's
+   @media (max-width: 768px/1000px) rules, which use no !important on the overlay and
+   lower specificity on the panel. Make the panel fill its pane; kill the mobile overlay. */
+.ptmt-panel-content #rpg-companion-panel.rpg-panel,
+.ptmt-panel-content #rpg-companion-panel.rpg-panel.rpg-position-left,
+.ptmt-panel-content #rpg-companion-panel.rpg-panel.rpg-position-right,
+.ptmt-panel-content #rpg-companion-panel.rpg-panel.rpg-position-top {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform: none !important;
+}
+
+.rpg-mobile-overlay {
+    display: none !important;
+}
