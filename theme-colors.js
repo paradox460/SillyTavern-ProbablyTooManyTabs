@@ -1,6 +1,6 @@
 import { getRequestHeaders, saveSettingsDebounced } from '../../../../script.js';
 import { power_user } from '../../../power-user.js';
-import { clampColorChannel, contrastRatio, hexToRgb, mixRgb, rgba, rgbDistance, rgbObjectToHsl as rgbToHsl, sortColorsByLightness } from './utils.js';
+import { clampColorChannel, ensureTextContrastToward, hexToRgb, mixRgb, rgba, rgbDistance, rgbObjectToHsl as rgbToHsl, sortColorsByLightness } from './utils.js';
 import { PALETTE_PROFILES as SHARED_PALETTE_PROFILES, buildThemeFromImage as buildSharedThemeFromImage } from './palette-generator.js';
 
 const PTMT_THEME_COLOR_KEY = 'ptmt_theme_colors';
@@ -68,16 +68,6 @@ function getExplicitThemeColor({ powerUserKey }) {
     return typeof value === 'string' && value.trim() ? value.trim() : '';
 }
 
-
-function ensureTextContrastToward(color, backgrounds, target = 'light', minRatio = 4.5) {
-    const mixTarget = target === 'dark' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
-    for (let amount = 0; amount <= 1; amount += 0.08) {
-        const candidate = amount === 0 ? color : mixRgb(color, mixTarget, amount);
-        const passes = backgrounds.every(background => contrastRatio(candidate, background) >= minRatio);
-        if (passes) return candidate;
-    }
-    return mixRgb(color, mixTarget, 0.8);
-}
 
 function isMuddyUiColor(color) {
     const { h, s, l } = rgbToHsl(color.rgb);

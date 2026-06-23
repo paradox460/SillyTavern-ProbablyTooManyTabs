@@ -440,7 +440,7 @@ export class SettingsManager {
 
     static getMobileLayout(sourceLayout) {
         if (!sourceLayout) return null;
-        const layout = JSON.parse(JSON.stringify(sourceLayout));
+        const layout = structuredClone(sourceLayout);
         layout.showLeft = false;
         layout.showRight = false;
         layout.columnSizes = {
@@ -497,7 +497,7 @@ export class SettingsManager {
 
     static getDesktopLayout(sourceLayout) {
         if (!sourceLayout) return null;
-        const layout = JSON.parse(JSON.stringify(sourceLayout));
+        const layout = structuredClone(sourceLayout);
         layout.showLeft = true;
         layout.showRight = true;
         layout.columnSizes = {
@@ -658,7 +658,7 @@ export class SettingsManager {
     async reset(full = false) {
         if (full) {
             console.log('[PTMT Settings] 🧨 Performing full factory reset.');
-            const defaultSettingsCopy = JSON.parse(JSON.stringify(SettingsManager.defaultSettings));
+            const defaultSettingsCopy = structuredClone(SettingsManager.defaultSettings);
             extension_settings.PTMT = defaultSettingsCopy;
         } else {
             // Layout-only reset: Clear saved snapshots to force fallback to current factory defaults

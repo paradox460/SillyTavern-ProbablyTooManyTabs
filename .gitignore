@@ -21,3 +21,4 @@ tools/
 run-theme-preview.sh
 .codegraph/
 .skills/
+.claude/

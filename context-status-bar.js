@@ -11,7 +11,7 @@ let statusBarElement = null;
 
 let lastUpdateData = null;
 
-export const updateStatusBar = debounce(async function () {
+const updateStatusBar = debounce(async function () {
     if (!statusBarElement) return;
 
     if (!settings.get('showContextStatusBar')) {

@@ -70,10 +70,6 @@ function normalizeBubbleMode(entry, fallback) {
     return fallback;
 }
 
-export function getColorizerCustomDefaults(type) {
-    return { ...DEFAULTS[getType(type)] };
-}
-
 export function buildCharacterCustomColorizerKey(charName, avatarFilename) {
     return buildCharacterColorizerKeyFromParts(charName, avatarFilename);
 }

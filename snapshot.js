@@ -93,16 +93,6 @@ function findDefaultNormalTabPlacement(defaultLayout, sourceId) {
     return null;
 }
 
-function findDefaultGhostTabPlacement(defaultLayout, ghostTab) {
-    for (const col of ['left', 'center', 'right']) {
-        const found = (defaultLayout.columns?.[col]?.ghostTabs || []).find(t =>
-            (t.searchId || '') === (ghostTab.searchId || '') && (t.searchClass || '') === (ghostTab.searchClass || '')
-        );
-        if (found) return { column: col, ghostTab: found };
-    }
-    return null;
-}
-
 function addTabToFirstPaneInColumn(snap, column, sourceId) {
     const addToNode = (node) => {
         if (!node) return false;
@@ -556,7 +546,7 @@ const SNAPSHOT_MIGRATIONS = {
 function migrateSnapshot(snapshot) {
     if (!snapshot || typeof snapshot !== 'object') return null;
 
-    let current = JSON.parse(JSON.stringify(snapshot));
+    let current = structuredClone(snapshot);
     let steps = 0;
     const MAX_STEPS = 25; // safety limit
 

@@ -33,6 +33,16 @@ export function contrastRatio(a, b) {
     return (lighter + 0.05) / (darker + 0.05);
 }
 
+export function ensureTextContrastToward(color, backgrounds, target = 'light', minRatio = 4.5) {
+    const mixTarget = target === 'dark' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+    for (let amount = 0; amount <= 1; amount += 0.08) {
+        const candidate = amount === 0 ? color : mixRgb(color, mixTarget, amount);
+        const passes = backgrounds.every(background => contrastRatio(candidate, background) >= minRatio);
+        if (passes) return candidate;
+    }
+    return mixRgb(color, mixTarget, 0.8);
+}
+
 export function rgbObjectToHsl({ r, g, b }) {
     r /= 255;
     g /= 255;

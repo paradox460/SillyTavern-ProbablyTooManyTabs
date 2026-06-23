@@ -62,7 +62,7 @@ function hideCharLibEmbedded() {
 }
 // charlib-embedded-container end
 
-export const tabActions = {
+const tabActions = {
     'gallery': {
         onInit: (_panel) => { },
         onSelect: (_panel) => { },

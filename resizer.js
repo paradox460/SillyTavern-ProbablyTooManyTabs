@@ -13,40 +13,6 @@ export function invalidatePaneTabSizeCache(pane) {
     }
 }
 
-function getOrCalculateFullTabSize(pane) {
-    if (pane.dataset.cachedTabSize) {
-        return parseFloat(pane.dataset.cachedTabSize);
-    }
-
-    const tabStrip = pane._tabStrip;
-    const tabs = tabStrip.querySelectorAll('.ptmt-tab');
-    if (tabs.length === 0) return 0;
-
-    const wasInIconMode = pane.classList.contains('ptmt-pane-icons-only');
-    if (wasInIconMode) {
-        pane.classList.remove('ptmt-pane-icons-only');
-    }
-
-    const isVertical = tabStrip.classList.contains('vertical');
-    // Tab margin contributes to outer size but not to getBoundingClientRect().
-    // For horizontal strips: each tab has margin on left+right = 2 * --ptmt-tab-margin.
-    // For vertical strips: already captured in tabRect.height (height is auto, fills margin).
-    const tabMargin = parseInt(getComputedStyle(document.body).getPropertyValue('--ptmt-tab-margin').trim(), 10) || 0;
-    const marginPerTab = isVertical ? 0 : tabMargin * 2;
-    let requiredSize = 0;
-    tabs.forEach(tab => {
-        const tabRect = tab.getBoundingClientRect();
-        requiredSize += (isVertical ? tabRect.height : tabRect.width) + marginPerTab;
-    });
-
-    if (wasInIconMode) {
-        pane.classList.add('ptmt-pane-icons-only');
-    }
-
-    pane.dataset.cachedTabSize = requiredSize;
-    return requiredSize;
-}
-
 export const resizerControllers = new WeakMap();
 
 export function checkPaneForIconMode(pane) {

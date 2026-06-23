@@ -222,67 +222,6 @@ function handleRestoreHiddenToLive(manager, targetContainer, newIndex) {
     manager.renderUnifiedEditor();
 }
 
-function handleRestorePendingToLive(manager, targetContainer, newIndex) {
-    const info = manager.draggedTabInfo;
-    const targetColumnName = targetContainer.dataset.columnName || targetContainer.closest('.ptmt-editor-column')?.dataset.columnName;
-    const targetPaneEl = targetContainer.closest('.ptmt-editor-pane');
-    const targetPaneId = targetPaneEl?.dataset?.paneId || targetContainer.dataset.paneId;
-    const targetPane = targetPaneId ? document.querySelector(`${SELECTORS.PANE}[data-pane-id="${targetPaneId}"]`) : null;
-
-    const { searchId, searchClass, sourceId } = info;
-    if (!targetPane) return;
-
-    let foundElement = null;
-    if (searchId) foundElement = document.getElementById(searchId);
-    else if (searchClass) foundElement = document.querySelector(`.${CSS.escape(searchClass)}`);
-
-    if (foundElement) {
-        const mapping = manager.settings.getMapping(sourceId);
-        const panel = manager.appApi.createTabFromContent(foundElement, {
-            title: mapping.title,
-            icon: mapping.icon,
-            makeActive: info.isActive,
-            collapsed: info.isCollapsed,
-            sourceId: sourceId,
-            color: mapping.color
-        }, targetPane);
-
-        if (panel) {
-            manager.appApi.moveTabIntoPaneAtIndex(panel, targetPane, newIndex);
-        }
-
-        const layout = manager.appApi.generateLayoutSnapshot();
-        for (const col of Object.values(layout.columns)) {
-            if (col.ghostTabs) {
-                col.ghostTabs = col.ghostTabs.filter(t => (t.searchId !== searchId || !searchId) && (t.searchClass !== searchClass || !searchClass));
-            }
-        }
-        manager.settings.update({ [manager.settings.getActiveLayoutKey()]: layout });
-    } else {
-        const layout = manager.appApi.generateLayoutSnapshot();
-        const identifier = getTabIdentifier({ searchId, searchClass });
-        let pendingInfo = null;
-        for (const colName in layout.columns) {
-            const col = layout.columns[colName];
-            if (col.ghostTabs) {
-                const idx = col.ghostTabs.findIndex(t => getTabIdentifier(t) === identifier);
-                if (idx !== -1) {
-                    pendingInfo = col.ghostTabs.splice(idx, 1)[0];
-                }
-            }
-        }
-        if (pendingInfo) {
-            pendingInfo.paneId = targetPaneId;
-            pendingInfo.active = info.isActive;
-            pendingInfo.collapsed = info.isCollapsed;
-            if (!layout.columns[targetColumnName].ghostTabs) layout.columns[targetColumnName].ghostTabs = [];
-            layout.columns[targetColumnName].ghostTabs.splice(newIndex, 0, pendingInfo);
-        }
-        manager.settings.update({ [manager.settings.getActiveLayoutKey()]: layout });
-    }
-    manager.renderUnifiedEditor();
-}
-
 function handlePendingTabDrop(manager, targetContainer, newIndex) {
     const info = manager.draggedTabInfo;
     const targetColumnName = targetContainer.dataset.columnName || targetContainer.closest('.ptmt-editor-column')?.dataset.columnName;

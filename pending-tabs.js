@@ -36,7 +36,7 @@ function addTabToPendingList(tabInfo) {
         pendingTabsMap.set(identifier, tabInfo);
 
         // Deep-clone to avoid mutating settings in memory before save
-        const currentLayout = JSON.parse(JSON.stringify(settings.getActiveLayout()));
+        const currentLayout = structuredClone(settings.getActiveLayout());
         const column = tabInfo.column || 'center';
 
         for (const col of Object.values(currentLayout.columns)) {
