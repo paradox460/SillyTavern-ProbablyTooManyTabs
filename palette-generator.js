@@ -1,4 +1,4 @@
-import { clampColorChannel, ensureTextContrastToward, extractColorsFromImage, hexToRgb, mixRgb, rgba, rgbDistance, rgbObjectToHsl as rgbToHsl } from './utils.js';
+import { clampColorChannel, ensureTextContrastToward, extractColorsFromImage, hexToRgb, mixRgb, rgba, rgbDistance, rgbObjectToHsl as rgbToHsl, sortColorsByLightness } from './utils.js';
 
 const TRANSLUCENT_PROFILE_SUFFIX = ' Alpha';
 const NORMAL_PROFILE_SUFFIX = ' Solid';
