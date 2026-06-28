@@ -96,6 +96,7 @@ export class SettingsManager {
             { id: 'right-nav-panel', title: 'Characters', icon: 'fa-magnifying-glass' },
             { id: 'expression-wrapper', title: 'Expression', icon: 'fa-face-smile' },
             { id: 'expression-plus-wrapper', title: 'Expression Plus', icon: 'fa-face-meh' },
+            { id: 'expressions_plus_carousel_body', title: 'Expression Plus Carousel', icon: 'fa-rectangle-list' },
             { id: 'AdvancedFormatting', title: 'Adv. Formatting', icon: 'fa-wand-magic-sparkles' },
             { id: 'rm_api_block', title: 'API Connections', icon: 'fa-plug' },
             { id: 'Backgrounds', title: 'Backgrounds', icon: 'fa-image' },
@@ -208,6 +209,7 @@ export class SettingsManager {
                                     { sourceId: "stqrd--drawer-v2" },
                                     { sourceId: "expression-wrapper" },
                                     { sourceId: "expression-plus-wrapper" },
+                                    { sourceId: "expressions_plus_carousel_body" },
                                     { sourceId: "charlib-embedded-container" }
                                 ]
                             }

@@ -62,6 +62,15 @@ function hideCharLibEmbedded() {
 }
 // charlib-embedded-container end
 
+// expressions_plus_carousel_body overrides start
+function hideExpressionsPlusCarouselFrame() {
+  debugger
+  const container = document.getElementById("expressions_plus_carousel_panel");
+  // Attempting to hide it doesn't work, as Expressions+ just shows it again every time expressions are updated
+  container?.remove()
+}
+// expressions_plus_carousel_body overrides end
+
 const tabActions = {
     'gallery': {
         onInit: (_panel) => { },
@@ -206,6 +215,12 @@ const tabActions = {
             document.getElementById('rpg-mobile-toggle')?.click();
         },
     },
+    'expressions_plus_carousel_body': {
+        onInit: (panel) => { hideExpressionsPlusCarouselFrame(); },
+        onSelect: (_panel) => { },
+        onCollapse: (_panel) => { },
+        onOpen: (_panel) => { },
+    },
 
 };
 
@@ -227,5 +242,3 @@ export function runTabAction(sourceId, actionType, panel) {
         }
     }
 }
-
-
